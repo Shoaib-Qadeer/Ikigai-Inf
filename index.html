@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Inferred Ikigai Prototype</title>
+<meta name="description" content="Prototype: three short games and a self-report check that build an explainable interests and personality profile for graduating students.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one 760px column, a waypoint route bar on top; screens swap in place like pages of a field journal. */
+:root{
+  --bg:#F2F5F3; --surface:#FFFFFF; --surface-2:#E6EDE9; --ink:#14302B; --muted:#536C66; --line:#C9D5D0;
+  --accent:#17705F; --accent-ink:#FFFFFF; --accent-soft:#D5EAE4; --sun:#B9800C;
+  --good:#2C7A4B; --mixed:#9C6508; --conflict:#A8443A;
+  --t-r:#8A5A2B; --t-i:#2C5F9E; --t-a:#94397F; --t-s:#2C7A4B; --t-e:#A8443A; --t-c:#585D6E;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1816; --surface:#16231F; --surface-2:#1E2F2A; --ink:#E4EDE9; --muted:#97ADA6; --line:#2E423C;
+  --accent:#4DB59E; --accent-ink:#06201A; --accent-soft:#1D3B34; --sun:#E2B451;
+  --good:#5CB884; --mixed:#E0A644; --conflict:#E27A6E;
+  --t-r:#D09A62; --t-i:#7FA9E3; --t-a:#D982C5; --t-s:#5CB884; --t-e:#E27A6E; --t-c:#A7ABBA; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E1816; --surface:#16231F; --surface-2:#1E2F2A; --ink:#E4EDE9; --muted:#97ADA6; --line:#2E423C;
+  --accent:#4DB59E; --accent-ink:#06201A; --accent-soft:#1D3B34; --sun:#E2B451;
+  --good:#5CB884; --mixed:#E0A644; --conflict:#E27A6E;
+  --t-r:#D09A62; --t-i:#7FA9E3; --t-a:#D982C5; --t-s:#5CB884; --t-e:#E27A6E; --t-c:#A7ABBA; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;margin:0}
+.wrap{max-width:760px;margin:0 auto;padding-inline:20px;padding-block:0 64px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:2.3rem;font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack-sm{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar-in{max-width:760px;margin:0 auto;padding-inline:20px;padding-block:12px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+.brand{font-family:var(--display);font-weight:700;font-size:1.05rem;white-space:nowrap}
+.brand span{color:var(--accent)}
+.route{display:flex;align-items:center;gap:0;flex:1;min-width:0;justify-content:center}
+.wp{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap}
+.wp i{width:10px;height:10px;border-radius:50%;border:2px solid var(--line);background:var(--bg);display:block;flex:none}
+.wp.done i{background:var(--accent);border-color:var(--accent)}
+.wp.now i{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.wp.now{color:var(--ink)}
+.seg{width:18px;height:2px;background:var(--line);margin:0 4px;flex:none}
+.seg.done{background:var(--accent)}
+@media (max-width:620px){ .wp b{display:none} .seg{width:10px} }
+@media (max-width:480px){ .route{display:none} }
+.deck-stack{z-index:2}
+.iconbtn{background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 .82rem var(--body);cursor:pointer;white-space:nowrap}
+.iconbtn .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line);margin-right:6px;vertical-align:1px}
+.iconbtn.on .dot{background:var(--accent)}
+
+main{padding-top:28px}
+.screen{display:flex;flex-direction:column;gap:22px}
+
+/* buttons */
+.btn{appearance:none;border:1px solid transparent;border-radius:999px;padding:11px 22px;font:700 1rem var(--body);cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{padding:7px 14px;font-size:.88rem}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.note{background:var(--surface-2);border-radius:var(--radius);padding:14px 16px;font-size:.95rem}
+.hr{height:1px;background:var(--line)}
+
+/* welcome */
+.hero{display:grid;gap:18px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.legs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.legs{grid-template-columns:1fr}}
+.leg{border-top:3px solid var(--accent);padding-top:10px;display:flex;flex-direction:column;gap:4px}
+.leg .eyebrow{color:var(--accent)}
+
+/* forms */
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:600}
+input[type=text],input[type=password],select,textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:44px;height:44px;resize:vertical;font-size:.92rem}
+textarea:focus{height:80px}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+.check input{margin-top:5px;width:18px;height:18px;flex:none;accent-color:var(--accent)}
+
+/* Game A */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.cards{grid-template-columns:1fr}}
+.ticket{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:14px;justify-content:space-between;min-width:0}
+.ticket p{font-weight:600;font-size:1.02rem}
+.ticket.most{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.ticket.least{border-color:var(--conflict);box-shadow:inset 0 0 0 1px var(--conflict)}
+.pickrow{display:flex;gap:8px}
+.pick{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 0;font:600 .88rem var(--body);cursor:pointer}
+.pick.on.m{background:var(--good);border-color:var(--good);color:var(--surface)}
+.pick.on.l{background:var(--conflict);border-color:var(--conflict);color:var(--surface)}
+
+/* progress line */
+.prog{display:flex;align-items:center;gap:12px}
+.prog .track{flex:1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.prog .fill{height:100%;background:var(--accent)}
+
+/* Game B */
+.scene{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:16px}
+.scene .quote{font-size:1.15rem}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:var(--radius);padding:12px 14px;font:400 1rem var(--body);cursor:pointer}
+.opt .k{font-family:var(--mono);font-size:.8rem;color:var(--muted);padding-top:2px;flex:none}
+.opt.on{border-color:var(--accent);background:var(--accent-soft)}
+
+/* Game C */
+.lock{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;gap:18px;align-items:center;text-align:center}
+.tiles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tile{width:48px;height:56px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font:600 1.6rem var(--mono)}
+.timer{font:600 1rem var(--mono)}
+.guessrow{display:flex;gap:8px;width:100%;max-width:420px}
+.guessrow input{text-transform:uppercase;font-family:var(--mono);letter-spacing:.2em;text-align:center}
+.fb{min-height:1.5em;font-weight:600}
+.fb.bad{color:var(--conflict)} .fb.good{color:var(--good)}
+
+/* self-report */
+.q{padding-block:14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.q:last-child{border-bottom:0}
+.q .stem{font-weight:600}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+@media (max-width:620px){.scale{grid-template-columns:1fr}}
+.scale label{border:1px solid var(--line);border-radius:8px;padding:8px 6px;text-align:center;font-size:.86rem;cursor:pointer;background:var(--bg);line-height:1.25;display:flex;align-items:center;justify-content:center;gap:6px}
+.scale input{position:absolute;opacity:0;pointer-events:none}
+.scale label:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.scale label:has(input:focus-visible){outline:3px solid var(--sun);outline-offset:1px}
+.practice{border:1px dashed var(--accent);border-radius:var(--radius);padding:16px;background:var(--surface)}
+
+/* results */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font:700 .95rem var(--body);color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.code{display:flex;gap:8px;flex-wrap:wrap}
+.letter{width:64px;height:72px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--surface);font-family:var(--display);font-weight:700;font-size:2rem;line-height:1}
+.letter small{font:600 .62rem var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+.bars{display:flex;flex-direction:column;gap:8px}
+.barrow{display:grid;grid-template-columns:130px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:.92rem}
+@media (max-width:520px){.barrow{grid-template-columns:96px minmax(0,1fr) 78px}}
+.barrow .lbl{font-weight:600;overflow-wrap:anywhere}
+.btrack{position:relative;height:14px;background:var(--surface-2);border-radius:7px}
+.btrack .g{position:absolute;top:0;bottom:0;left:0;border-radius:7px;opacity:.9}
+.btrack .s{position:absolute;top:-3px;width:3px;height:20px;background:var(--ink);border-radius:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:10px;border-radius:5px;display:inline-block;background:var(--accent)}
+.sw.tick{width:3px;height:14px;background:var(--ink);border-radius:2px}
+.stmt{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px}
+.stmt .head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.pill{font:600 .72rem var(--mono);letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 9px;border:1px solid currentColor;white-space:nowrap}
+.pill.consistent{color:var(--good)} .pill.mixed{color:var(--mixed)} .pill.conflicting{color:var(--conflict)} .pill.example{color:var(--sun)}
+.stmt .text{font-size:1.1rem;font-weight:600}
+.react{display:flex;gap:6px;flex-wrap:wrap}
+.react button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font:600 .85rem var(--body);cursor:pointer}
+.react button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.fields{grid-template-columns:1fr}}
+.fields ul{margin:6px 0 0;padding-left:20px}
+.banner{border:1px solid var(--sun);color:var(--ink);background:var(--surface);border-radius:var(--radius);padding:10px 14px;font-size:.92rem}
+.banner b{color:var(--sun)}
+
+/* evidence */
+.ev{display:flex;flex-direction:column;gap:12px}
+.ev details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px}
+.ev summary{cursor:pointer;font-weight:700;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ev .calc{font-family:var(--mono);font-size:.82rem;background:var(--surface-2);border-radius:8px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ev dl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 12px;margin:10px 0 0;font-size:.92rem}
+.ev dt{color:var(--muted);font-weight:600}
+.ev dd{margin:0;min-width:0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.85rem}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:700;white-space:nowrap}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tt{font:600 .7rem var(--mono);border-radius:4px;padding:1px 5px;color:var(--surface)}
+.jsonbox{font:400 .75rem/1.4 var(--mono);max-height:260px;overflow:auto;white-space:pre;background:var(--surface-2);border-radius:8px;padding:10px}
+
+/* modal */
+.modal{position:fixed;inset:0;background:color-mix(in srgb, var(--ink) 40%, transparent);display:grid;place-items:center;padding:16px;z-index:20}
+.modal .panel{max-width:520px;width:100%;max-height:90vh;overflow:auto}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch span{position:absolute;inset:0;background:var(--line);border-radius:13px;cursor:pointer;transition:background .15s}
+.switch span::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.switch input:checked + span{background:var(--accent)}
+.switch input:checked + span::after{transform:translateX(20px)}
+.switch input:focus-visible + span{outline:3px solid var(--sun);outline-offset:2px}
+
+/* AI coach */
+.coach{border:1px solid var(--accent);border-radius:var(--radius);padding:16px;background:var(--surface);display:flex;flex-direction:column;gap:12px}
+.msg{padding:10px 12px;border-radius:8px;font-size:.95rem;white-space:pre-wrap}
+.msg.ai{background:var(--accent-soft)}
+.msg.me{background:var(--surface-2)}
+.msg .who{font:600 .68rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+/* pictures */
+.ico{display:block;flex:none}
+.art{width:58px;height:58px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.scene-art{width:76px;height:76px;border-radius:18px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+
+/* Game C tiles */
+.padlock{width:72px;height:72px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:grid;place-items:center;transition:background .2s,color .2s}
+.padlock.open{background:var(--accent-soft);color:var(--good)}
+.slots{display:flex;gap:8px;justify-content:center}
+.slot{width:44px;height:52px;border-bottom:3px solid var(--line);display:grid;place-items:center;font:600 1.5rem var(--mono)}
+.slot.full{border-bottom-color:var(--accent)}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+button.tile{color:var(--ink);cursor:pointer;transition:transform .08s}
+button.tile:hover:not(:disabled){transform:translateY(-2px);border-color:var(--accent)}
+button.tile:disabled{opacity:.25;cursor:default}
+.iconbtn{display:inline-flex;align-items:center;gap:6px}
+
+/* Mirror round: deck */
+.deck-area{display:flex;flex-direction:column;gap:22px;align-items:center}
+.deck-stack{position:relative;width:min(100%,400px);min-height:210px}
+.deck-shadow{position:absolute;inset:10px -8px -10px 8px;border-radius:16px;background:var(--surface-2);border:1px solid var(--line);transform:rotate(2.5deg)}
+.deck-card{position:relative;min-height:210px;border-radius:16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 24px color-mix(in srgb, var(--ink) 12%, transparent);padding:24px;display:flex;flex-direction:column;justify-content:center;gap:10px;cursor:grab;touch-action:none;user-select:none}
+.deck-card.dragging{z-index:10;cursor:grabbing;box-shadow:0 16px 36px color-mix(in srgb, var(--ink) 22%, transparent)}
+.deck-card.practice{border:2px dashed var(--accent)}
+.deck-text{font-family:var(--display);font-size:1.6rem;font-weight:700;line-height:1.2;text-wrap:balance}
+.zones{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:100%}
+.zone{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:12px;border:1px solid var(--line);color:var(--ink);cursor:pointer;font:400 .9rem var(--body);line-height:1.2;text-align:center;transition:transform .1s, box-shadow .1s}
+.zone b{font-weight:700}
+.zone .za{font:400 .66rem var(--mono);color:var(--muted);letter-spacing:.02em}
+.zone .zf{color:var(--accent)}
+.z1{background:var(--surface)} .z2{background:color-mix(in srgb, var(--accent) 8%, var(--surface))} .z3{background:color-mix(in srgb, var(--accent) 15%, var(--surface))}
+.z4{background:color-mix(in srgb, var(--accent) 24%, var(--surface))} .z5{background:color-mix(in srgb, var(--accent) 34%, var(--surface))}
+.zone:hover,.zone.hot{transform:translateY(-3px);box-shadow:0 0 0 2px var(--accent)}
+.zone.on{box-shadow:0 0 0 2px var(--ink)}
+@media (max-width:560px){ .zone{padding:10px 2px;font-size:.78rem} .zone .za{display:none} .deck-text{font-size:1.35rem} }
+
+/* Mirror round: job board */
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:440px){.board{grid-template-columns:1fr}}
+.job{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.job.rated{border-color:var(--accent)}
+.job.practice{border-style:dashed;border-color:var(--accent)}
+.job p{font-weight:600;flex:1}
+.job-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.job .art{width:46px;height:46px}
+.faces{display:flex;justify-content:space-between;gap:2px}
+.facebtn{background:none;border:0;padding:4px;border-radius:50%;color:var(--muted);cursor:pointer;transition:transform .1s,color .1s}
+.facebtn:hover{color:var(--ink);transform:scale(1.12)}
+.facebtn.on{color:var(--accent-ink);background:var(--accent);transform:scale(1.15)}
+.facelab{min-height:1.2em;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">Inferred <span>Ikigai</span></div>
+    <nav class="route" id="route" aria-label="Progress"></nav>
+    <button class="iconbtn" id="aiBtn" type="button"><span class="dot"></span>AI mode</button>
+  </div>
+</header>
+<div class="wrap"><main id="app" aria-live="polite"></main></div>
+<div id="modalRoot"></div>
+
+<!-- Icons: Lucide v0.460.0 (ISC license, lucide.dev), only the shapes this page uses -->
+<script id="icons">
+const ICONS = {"network":"<rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"2\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"6\" rx=\"1\"/><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3\"/><path d=\"M12 12V8\"/>","hammer":"<path d=\"m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9\"/><path d=\"m18 15 4-4\"/><path d=\"m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5\"/>","compass":"<path d=\"m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/>","factory":"<path d=\"M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/><path d=\"M17 18h1\"/><path d=\"M12 18h1\"/><path d=\"M7 18h1\"/>","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2\"/><path d=\"M12 20v2\"/><path d=\"m4.93 4.93 1.41 1.41\"/><path d=\"m17.66 17.66 1.41 1.41\"/><path d=\"M2 12h2\"/><path d=\"M20 12h2\"/><path d=\"m6.34 17.66-1.41 1.41\"/><path d=\"m19.07 4.93-1.41 1.41\"/>","plane":"<path d=\"M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z\"/>","chart-scatter":"<circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"18.5\" cy=\"5.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"11.5\" cy=\"11.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"7.5\" cy=\"16.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"17.5\" cy=\"14.5\" r=\".5\" fill=\"currentColor\"/><path d=\"M3 3v16a2 2 0 0 0 2 2h16\"/>","flask-conical":"<path d=\"M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2\"/><path d=\"M8.5 2h7\"/><path d=\"M7 16h10\"/>","microscope":"<path d=\"M6 18h8\"/><path d=\"M3 22h18\"/><path d=\"M14 22a7 7 0 1 0 0-14h-1\"/><path d=\"M9 14h2\"/><path d=\"M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z\"/><path d=\"M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3\"/>","bug":"<path d=\"m8 2 1.88 1.88\"/><path d=\"M14.12 3.88 16 2\"/><path d=\"M9 7.13v-1a3.003 3.003 0 1 1 6 0v1\"/><path d=\"M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6\"/><path d=\"M12 20v-9\"/><path d=\"M6.53 9C4.6 8.8 3 7.1 3 5\"/><path d=\"M6 13H2\"/><path d=\"M3 21c0-2.1 1.7-3.9 3.8-4\"/><path d=\"M20.97 5c0 2.1-1.6 3.8-3.5 4\"/><path d=\"M22 13h-4\"/><path d=\"M17.2 17c2.1.1 3.8 1.9 3.8 4\"/>","cloud-rain":"<path d=\"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242\"/><path d=\"M16 14v6\"/><path d=\"M8 14v6\"/><path d=\"M12 16v6\"/>","construction":"<rect x=\"2\" y=\"6\" width=\"20\" height=\"8\" rx=\"1\"/><path d=\"M17 14v7\"/><path d=\"M7 14v7\"/><path d=\"M17 3v3\"/><path d=\"M7 3v3\"/><path d=\"M10 14 2.3 6.3\"/><path d=\"m14 6 7.7 7.7\"/><path d=\"m8 6 8 8\"/>","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/>","clapperboard":"<path d=\"M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z\"/><path d=\"m6.2 5.3 3.1 3.9\"/><path d=\"m12.4 3.4 3.1 4\"/><path d=\"M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z\"/>","music":"<path d=\"M9 18V5l12-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"18\" cy=\"16\" r=\"3\"/>","palette":"<circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/><circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\"/><path d=\"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z\"/>","drama":"<path d=\"M10 11h.01\"/><path d=\"M14 6h.01\"/><path d=\"M18 6h.01\"/><path d=\"M6.5 13.1h.01\"/><path d=\"M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3\"/><path d=\"M17.4 9.9c-.8.8-2 .8-2.8 0\"/><path d=\"M10.1 7.1C9 7.2 7.7 7.7 6 8.6c-3.5 2-4.7 3.9-3.7 5.6 4.5 7.8 9.5 8.4 11.2 7.4.9-.5 1.9-2.1 1.9-4.7\"/><path d=\"M9.1 16.5c.3-1.1 1.4-1.7 2.4-1.4\"/>","camera":"<path d=\"M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z\"/><circle cx=\"12\" cy=\"13\" r=\"3\"/>","graduation-cap":"<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\"/><path d=\"M22 10v6\"/><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\"/>","signpost":"<path d=\"M12 13v8\"/><path d=\"M12 3v3\"/><path d=\"M18 6a2 2 0 0 1 1.387.56l2.307 2.22a1 1 0 0 1 0 1.44l-2.307 2.22A2 2 0 0 1 18 13H6a2 2 0 0 1-1.387-.56l-2.306-2.22a1 1 0 0 1 0-1.44l2.306-2.22A2 2 0 0 1 6 6z\"/>","heart-pulse":"<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/><path d=\"M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/>","stethoscope":"<path d=\"M11 2v2\"/><path d=\"M5 2v2\"/><path d=\"M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1\"/><path d=\"M8 15a6 6 0 0 0 12 0v-3\"/><circle cx=\"20\" cy=\"10\" r=\"2\"/>","trophy":"<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\"/><path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\"/><path d=\"M4 22h16\"/><path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\"/><path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/>","rocket":"<path d=\"M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z\"/><path d=\"m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z\"/><path d=\"M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0\"/><path d=\"M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5\"/>","handshake":"<path d=\"m11 17 2 2a1 1 0 1 0 3-3\"/><path d=\"m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4\"/><path d=\"m21 3 1 11h-2\"/><path d=\"M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3\"/><path d=\"M3 4h8\"/>","target":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/>","vote":"<path d=\"m9 12 2 2 4-4\"/><path d=\"M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z\"/><path d=\"M22 19H2\"/>","utensils":"<path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/><path d=\"M7 2v20\"/><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"/>","megaphone":"<path d=\"m3 11 18-5v12L3 14v-3z\"/><path d=\"M11.6 16.8a3 3 0 1 1-5.8-1.6\"/>","calculator":"<rect width=\"16\" height=\"20\" x=\"4\" y=\"2\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\"/><line x1=\"16\" x2=\"16\" y1=\"14\" y2=\"18\"/><path d=\"M16 10h.01\"/><path d=\"M12 10h.01\"/><path d=\"M8 10h.01\"/><path d=\"M12 14h.01\"/><path d=\"M8 14h.01\"/><path d=\"M12 18h.01\"/><path d=\"M8 18h.01\"/>","database":"<ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"/><path d=\"M3 5V19A9 3 0 0 0 21 19V5\"/><path d=\"M3 12A9 3 0 0 0 21 12\"/>","file-check":"<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/><path d=\"m9 15 2 2 4-4\"/>","truck":"<path d=\"M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2\"/><path d=\"M15 18H9\"/><path d=\"M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14\"/><circle cx=\"17\" cy=\"18\" r=\"2\"/><circle cx=\"7\" cy=\"18\" r=\"2\"/>","receipt":"<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\"/><path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\"/><path d=\"M12 17.5v-11\"/>","package":"<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\"/><path d=\"M12 22V12\"/><path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\"/><path d=\"m7.5 4.27 9 5.15\"/>","party-popper":"<path d=\"M5.8 11.3 2 22l10.7-3.79\"/><path d=\"M4 3h.01\"/><path d=\"M22 8h.01\"/><path d=\"M15 2h.01\"/><path d=\"M22 20h.01\"/><path d=\"m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10\"/><path d=\"m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17\"/><path d=\"m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7\"/><path d=\"M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z\"/>","book-open":"<path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/>","mail":"<rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"/><path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"/>","library":"<path d=\"m16 6 4 14\"/><path d=\"M12 6v14\"/><path d=\"M8 8v12\"/><path d=\"M4 4v16\"/>","presentation":"<path d=\"M2 3h20\"/><path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\"/><path d=\"m7 21 5-5 5 5\"/>","phone":"<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"/>","briefcase":"<path d=\"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/><rect width=\"20\" height=\"14\" x=\"2\" y=\"6\" rx=\"2\"/>","map":"<path d=\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\"/><path d=\"M15 5.764v15\"/><path d=\"M9 3.236v15\"/>","wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/>","chart-line":"<path d=\"M3 3v16a2 2 0 0 0 2 2h16\"/><path d=\"m19 9-5 5-4-4-3 3\"/>","pen-tool":"<path d=\"M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z\"/><path d=\"m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18\"/><path d=\"m2.3 2.3 7.286 7.286\"/><circle cx=\"11\" cy=\"11\" r=\"2\"/>","trees":"<path d=\"M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z\"/><path d=\"M7 16v6\"/><path d=\"M13 19v3\"/><path d=\"M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .8-1.7L13 3l-1.4 1.5\"/>","feather":"<path d=\"M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z\"/><path d=\"M16 8 2 22\"/><path d=\"M17.5 15H9\"/>","hand-heart":"<path d=\"M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16\"/><path d=\"m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\"/><path d=\"m2 15 6 6\"/><path d=\"M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z\"/>","trending-up":"<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\"/><polyline points=\"16 7 22 7 22 13\"/>","clipboard-check":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\"/><path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\"/><path d=\"m9 14 2 2 4-4\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>","lock-open":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>","delete":"<path d=\"M10 5a2 2 0 0 0-1.344.519l-6.328 5.74a1 1 0 0 0 0 1.481l6.328 5.741A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z\"/><path d=\"m12 9 6 6\"/><path d=\"m18 9-6 6\"/>","shuffle":"<path d=\"M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22\"/><path d=\"m18 2 4 4-4 4\"/><path d=\"M2 6h1.9c1.5 0 2.9.9 3.6 2.2\"/><path d=\"M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8\"/><path d=\"m18 14 4 4-4 4\"/>","user-round":"<circle cx=\"12\" cy=\"8\" r=\"5\"/><path d=\"M20 21a8 8 0 0 0-16 0\"/>"};
+function icon(name, size=24, cls=""){ const p = ICONS[name]; return p ? `<svg class="ico ${cls}" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>` : ""; }
+</script>
+
+<!-- ===== CONTENT + SCORING (pure, deterministic; tested separately) ===== -->
+<script id="core">
+const VERSION = "0.1.0";
+const TYPES = ["R","I","A","S","E","C"];
+const TYPE_INFO = {
+  R:{name:"Realistic", short:"Build", desc:"building, fixing, and working with tools, machines or the outdoors"},
+  I:{name:"Investigative", short:"Think", desc:"analyzing, researching and solving problems with data and science"},
+  A:{name:"Artistic", short:"Create", desc:"creating, designing, writing and expressing ideas"},
+  S:{name:"Social", short:"Help", desc:"teaching, helping, caring for and supporting people"},
+  E:{name:"Enterprising", short:"Persuade", desc:"leading, persuading, selling and starting things"},
+  C:{name:"Conventional", short:"Organize", desc:"organizing, keeping records accurate and working with clear systems"}
+};
+const FIELDS = {
+  R:["Civil or mechanical engineering","Electronics and IT infrastructure","Agriculture technology","Renewable energy installation","Construction and site management"],
+  I:["Data science and analytics","Research and laboratory science","Medicine and health sciences","Software engineering","Environmental science"],
+  A:["UX/UI and graphic design","Film, media and content creation","Architecture","Writing and journalism","Game design"],
+  S:["Teaching and education","Counseling and psychology","Nursing and public health","Human resources and training","Social work and NGOs"],
+  E:["Entrepreneurship","Sales and business development","Marketing and brand management","Management consulting","Law and policy advocacy"],
+  C:["Accounting and auditing","Banking and finance operations","Supply chain and logistics","Database administration","Project coordination"]
+};
+
+/* Game A: 36 activity cards, 6 per type, used in order of appearance. */
+const A_CARDS = {
+  R:["Set up and repair the computer network in an office","Build a working prototype in a workshop","Survey land with GPS equipment outdoors","Keep machines running on a production line","Install solar panels on a rooftop","Assemble and test a delivery drone"],
+  I:["Analyze a dataset to find hidden patterns","Run experiments to test why a medicine works","Research the cause of a disease outbreak","Debug a complex algorithm","Study climate data to predict rainfall","Investigate why a bridge design failed"],
+  A:["Design the look of a mobile app","Write a short film script","Compose music for a video game","Illustrate a children's book","Design the stage set for a play","Photograph and edit a magazine story"],
+  S:["Teach a class of first-year students","Counsel students who are choosing careers","Run a health awareness workshop in a community","Train new employees on their first week","Support patients through their recovery","Mentor young people at a sports club"],
+  E:["Pitch a startup idea to investors","Negotiate a better price with a supplier","Lead a sales team to its monthly target","Run a campaign to win a student union election","Manage the business side of a restaurant","Persuade companies to sponsor an event"],
+  C:["Keep a company's accounts accurate","Organize a database of customer records","Check contracts for errors before signing","Plan schedules and logistics for shipments","Audit expenses against company rules","Maintain stock records for a warehouse"]
+};
+const A_ICONS = { // one picture per card; every card has a different one, so pictures don't give away the type
+  R:["network","hammer","compass","factory","sun","plane"],
+  I:["chart-scatter","flask-conical","microscope","bug","cloud-rain","construction"],
+  A:["smartphone","clapperboard","music","palette","drama","camera"],
+  S:["graduation-cap","signpost","heart-pulse","users","stethoscope","trophy"],
+  E:["rocket","handshake","target","vote","utensils","megaphone"],
+  C:["calculator","database","file-check","truck","receipt","package"]
+};
+const A_TRIADS = ["IAC","RSE","ISC","IAS","REC","AEC","RAS","ASE","IEC","RAC","RIS","RIE"];
+function buildRoundsA(){
+  const used = {R:0,I:0,A:0,S:0,E:0,C:0};
+  return A_TRIADS.map((tri, r) => {
+    let cards = tri.split("").map(t => { const k = used[t]++; return { id: t + (k+1), type: t, text: A_CARDS[t][k], icon: A_ICONS[t][k] }; });
+    const rot = r % 3; cards = cards.slice(rot).concat(cards.slice(0, rot)); // fixed display order
+    return { round: r+1, cards };
+  });
+}
+const A_ROUNDS = buildRoundsA();
+
+/* Game B: 10 scenes, 2 per trait; options keyed level 1..4; order = fixed display order of option indexes. */
+const TRAITS = ["E","A","C","N","O"];
+const TRAIT_INFO = {
+  E:{name:"Extraversion", plain:"Social energy"},
+  A:{name:"Agreeableness", plain:"Putting others first"},
+  C:{name:"Conscientiousness", plain:"Planning and order"},
+  N:{name:"Emotional reactivity", plain:"How strongly stress hits"},
+  O:{name:"Openness", plain:"Pull toward the new"}
+};
+const B_SCENES = [
+ {id:"E1",icon:"party-popper",trait:"E",title:"The graduation party",text:"A friend invites you to a big graduation party. You know almost nobody there. What do you do?",options:["Skip it and have a quiet evening instead.","Go for a short while, stay with my friend, and leave early.","Go and chat with a few new people.","Go and end up talking to most of the room."],order:[2,0,3,1]},
+ {id:"C1",icon:"book-open",trait:"C",title:"Thesis countdown",text:"Your final thesis is due in three weeks. What do you do?",options:["Start in the last few days. I work best under pressure.","Start in the second week with a rough idea.","Make a plan and work on it most days.","Build a detailed schedule and finish a few days early."],order:[1,3,0,2]},
+ {id:"A1",icon:"handshake",trait:"A",title:"Credit where it is due",text:"A teammate did very little on your group report. They ask to be listed as an equal contributor. What do you do?",options:["Say no and tell the instructor what happened.","Agree only if they do the final edits now.","Agree, but tell them honestly that it bothered me.","Agree without fuss. Keeping the peace matters more."],order:[3,1,2,0]},
+ {id:"N1",icon:"mail",trait:"N",title:"A vague email",text:"A company you applied to emails you: “Can we talk about your application?” There are no other details. How do you react?",options:["Assume it is routine and carry on with my day.","Feel curious and check my inbox a bit more often.","Keep thinking about it until I hear back.","Struggle to focus and imagine the worst cases."],order:[2,0,3,1]},
+ {id:"O1",icon:"library",trait:"O",title:"One free elective",text:"Your last term has room for one free elective. Which do you pick?",options:["The one closest to my major, so it is familiar.","A practical skills course, like advanced Excel.","Something new to me that is still useful for work.","Something completely different, like philosophy or astronomy, because it interests me."],order:[0,3,1,2]},
+ {id:"E2",icon:"users",trait:"E",title:"The silent first meeting",text:"It is the first meeting of a new group project and nobody is speaking. What do you do?",options:["Wait for someone else to start.","Share my idea if someone asks me.","Offer an opinion to get things moving.","Take the lead and run the meeting."],order:[3,0,2,1]},
+ {id:"A2",icon:"phone",trait:"A",title:"The night before the exam",text:"A close friend calls, upset about a rejection. You have an exam tomorrow morning. What do you do?",options:["Tell them I am busy and will call after the exam.","Send a supportive message and keep studying.","Talk on the phone for 15 minutes, then study.","Stop studying and go to see them."],order:[1,2,0,3]},
+ {id:"C2",icon:"briefcase",trait:"C",title:"Interview tomorrow",text:"You have a job interview tomorrow at 10 am. How do you prepare?",options:["Find my documents in the morning before I leave.","Put my documents roughly together tonight.","Prepare a folder and my outfit the night before.","Make a checklist, print spare copies and plan the route with extra time."],order:[2,0,3,1]},
+ {id:"N2",icon:"presentation",trait:"N",title:"The presentation",text:"Your class presentation goes badly. You lose your place and the slides freeze. Afterwards:",options:["I shrug it off and forget it by the evening.","I feel annoyed for an hour or so.","I replay it in my head for the rest of the day.","I feel low about it for several days."],order:[1,3,0,2]},
+ {id:"O2",icon:"map",trait:"O",title:"A weekend somewhere new",text:"You have a free weekend in a city you have never visited. How do you spend it?",options:["Visit places like the ones I already enjoy at home.","Follow a top-ten list of tourist sights.","Plan a few sights, then wander.","Make no plan and look for unusual places and food I have never tried."],order:[3,1,2,0]}
+];
+
+/* Game C: 8 locks. Unsolvable sets have no 6-letter anagram in a 234k-word dictionary (checked offline). */
+const C_LOCKS = [
+ {n:1,letters:"TREKAM",answer:"MARKET",solvable:true},
+ {n:2,letters:"GIDREB",answer:"BRIDGE",solvable:true},
+ {n:3,letters:"TESKIB",answer:null,solvable:false},
+ {n:4,letters:"TECKOP",answer:"POCKET",solvable:true},
+ {n:5,letters:"PRENIW",answer:null,solvable:false},
+ {n:6,letters:"GLUNEJ",answer:"JUNGLE",solvable:true},
+ {n:7,letters:"TROLIM",answer:null,solvable:false},
+ {n:8,letters:"NIWDOW",answer:"WINDOW",solvable:true}
+];
+const C_LIMIT = 90, C_SEC_PER_GUESS = 20;
+function usesExactLetters(guess, letters){
+  return guess.length === letters.length && guess.split("").sort().join("") === letters.split("").sort().join("");
+}
+
+/* Self-report */
+const ACC_SCALE = ["Very inaccurate","Moderately inaccurate","Neither","Moderately accurate","Very accurate"];
+const LIKE_SCALE = ["Strongly dislike","Dislike","Unsure","Like","Strongly like"];
+const MINI_IPIP = [ // Donnellan et al. (2006), items and keys from ipip.ori.org/MiniIPIPKey.htm; original item order
+ {id:"M1",trait:"E",key:1,text:"Am the life of the party."},
+ {id:"M2",trait:"A",key:1,text:"Sympathize with others' feelings."},
+ {id:"M3",trait:"C",key:1,text:"Get chores done right away."},
+ {id:"M4",trait:"N",key:1,text:"Have frequent mood swings."},
+ {id:"M5",trait:"O",key:1,text:"Have a vivid imagination."},
+ {id:"M6",trait:"E",key:-1,text:"Don't talk a lot."},
+ {id:"M7",trait:"A",key:-1,text:"Am not interested in other people's problems."},
+ {id:"M8",trait:"C",key:-1,text:"Often forget to put things back in their proper place."},
+ {id:"M9",trait:"N",key:-1,text:"Am relaxed most of the time."},
+ {id:"M10",trait:"O",key:-1,text:"Am not interested in abstract ideas."},
+ {id:"M11",trait:"E",key:1,text:"Talk to a lot of different people at parties."},
+ {id:"M12",trait:"A",key:1,text:"Feel others' emotions."},
+ {id:"M13",trait:"C",key:1,text:"Like order."},
+ {id:"M14",trait:"N",key:1,text:"Get upset easily."},
+ {id:"M15",trait:"O",key:-1,text:"Have difficulty understanding abstract ideas."},
+ {id:"M16",trait:"E",key:-1,text:"Keep in the background."},
+ {id:"M17",trait:"A",key:-1,text:"Am not really interested in others."},
+ {id:"M18",trait:"C",key:-1,text:"Make a mess of things."},
+ {id:"M19",trait:"N",key:-1,text:"Seldom feel blue."},
+ {id:"M20",trait:"O",key:-1,text:"Do not have a good imagination."}
+];
+const INTEREST_ITEMS = [ // prototype items, O*NET work-activity style, not validated
+ {id:"I1",icon:"wrench",type:"R",text:"Repair or assemble equipment"},
+ {id:"I2",icon:"chart-line",type:"I",text:"Analyze data to find out why something happens"},
+ {id:"I3",icon:"pen-tool",type:"A",text:"Design a poster, video or app screen"},
+ {id:"I4",icon:"graduation-cap",type:"S",text:"Teach or tutor someone"},
+ {id:"I5",icon:"trending-up",type:"E",text:"Pitch an idea to win support or funding"},
+ {id:"I6",icon:"calculator",type:"C",text:"Keep records and spreadsheets accurate"},
+ {id:"I7",icon:"trees",type:"R",text:"Work outdoors on a building or field project"},
+ {id:"I8",icon:"flask-conical",type:"I",text:"Run a laboratory experiment"},
+ {id:"I9",icon:"feather",type:"A",text:"Write stories, scripts or articles"},
+ {id:"I10",icon:"hand-heart",type:"S",text:"Help people work through personal problems"},
+ {id:"I11",icon:"target",type:"E",text:"Lead a team toward a sales target"},
+ {id:"I12",icon:"clipboard-check",type:"C",text:"Check documents for errors and follow procedures"}
+];
+const PERSIST_ITEMS = [ // prototype items, not validated
+ {id:"P1",key:1,text:"When a problem gets hard, I keep going until I solve it."},
+ {id:"P2",key:-1,text:"I give up quickly when something doesn't work at first."}
+];
+
+/* Mirror round, part 1: the deck. Mini-IPIP items in original order, persistence items slotted in at fixed places. */
+const DECK = [...MINI_IPIP.slice(0,8), PERSIST_ITEMS[0], ...MINI_IPIP.slice(8,16), PERSIST_ITEMS[1], ...MINI_IPIP.slice(16)];
+const ZONES = [ // value, standard IPIP anchor, friendly label
+ [1,"Very inaccurate","That's not me"],[2,"Moderately inaccurate","Not really"],[3,"Neither","Hard to say"],[4,"Moderately accurate","Kind of me"],[5,"Very accurate","That's me"]];
+
+const SENTENCES = {
+  E:{high:"You tend to get energy from being around people and groups.",middle:"You're comfortable in groups and on your own, depending on the day.",low:"You tend to recharge on your own or with a few close people."},
+  A:{high:"You tend to put other people's feelings first and avoid conflict.",middle:"You balance caring for others with standing up for yourself.",low:"You tend to be direct, and put fairness or the task ahead of keeping the peace."},
+  C:{high:"You tend to plan ahead and finish before deadlines.",middle:"You plan for what matters most and stay flexible on the rest.",low:"You tend to work in bursts and prefer flexibility over detailed plans."},
+  N:{high:"Setbacks and uncertainty tend to stay with you for a while.",middle:"Stress affects you at times, and you usually recover within a day.",low:"You tend to stay calm when things are uncertain or go wrong."},
+  O:{high:"You're drawn to new ideas, unfamiliar places and subjects outside your field.",middle:"You like some novelty, mixed with what you already know works.",low:"You prefer the familiar and practical over the new and abstract."},
+  P:{high:"You keep working on hard problems long after many people would stop.",middle:"You give hard problems a fair try, then move on.",low:"You tend to move on quickly when a problem doesn't give way."}
+};
+const REFS = {
+  miniipip:{label:"Donnellan et al. (2006), Mini-IPIP",url:"https://ipip.ori.org/MiniIPIPKey.htm"},
+  onet:{label:"Rounds et al. (2010), O*NET Interest Profiler Short Form",url:"https://www.onetcenter.org/reports/IPSF_Psychometric.html"},
+  nye:{label:"Nye et al. (2017), interest congruence and performance",url:"https://experts.illinois.edu/en/publications/interest-congruence-and-performance-revisiting-recent-meta-analyt/"},
+  ventura:{label:"Ventura, Shute & Zhao (2013), time on unsolved problems as persistence",url:"https://learntechlib.org/p/132187"},
+  palaoag:{label:"Palaoag et al. (2015), time can mean being stuck",url:"https://library.apsce.net/index.php/ICCE/article/view/1004"},
+  dang:{label:"Dang, King & Inzlicht (2020), why game and self-report differ",url:"https://pmc.ncbi.nlm.nih.gov/articles/PMC7977810"}
+};
+
+/* ---------- scoring (pure functions) ---------- */
+const round0 = x => Math.round(x);
+const r2 = x => Math.round(x*100)/100;
+function band(score){ return score <= 33 ? "low" : score <= 66 ? "middle" : "high"; }
+const BAND_LABEL = {low:"lower", middle:"middle", high:"higher"};
+function gapLabel(gap){ return gap <= 20 ? "consistent" : gap <= 35 ? "mixed" : "conflicting"; }
+function overlapLabel(n){ return n >= 2 ? "consistent" : n === 1 ? "mixed" : "conflicting"; }
+
+function hollandCode(scores, mostCounts){
+  const order = TYPES.slice().sort((a,b) => (scores[b]-scores[a]) || ((mostCounts?mostCounts[b]:0)-(mostCounts?mostCounts[a]:0)) || (TYPES.indexOf(a)-TYPES.indexOf(b)));
+  return order.slice(0,3).join("");
+}
+function scoreGameA(picks){ // picks: [{round, most:type, least:type}]
+  const most={}, least={}, net={}, score={}, calc={};
+  TYPES.forEach(t => { most[t]=0; least[t]=0; });
+  picks.forEach(p => { most[p.most]++; least[p.least]++; });
+  TYPES.forEach(t => { net[t]=most[t]-least[t]; score[t]=round0((net[t]+6)/12*100);
+    calc[t]=`net = ${most[t]} most − ${least[t]} least = ${net[t]}\nscore = (${net[t]} + 6) ÷ 12 × 100 = ${score[t]}`; });
+  return { most, least, net, score, calc, code: hollandCode(score, most) };
+}
+function scoreInterestSR(answers){ // answers: {I1: 1..5}
+  const score={}, calc={}, vals={};
+  TYPES.forEach(t => {
+    const items = INTEREST_ITEMS.filter(i => i.type===t);
+    vals[t] = items.map(i => answers[i.id]);
+    const mean = vals[t].reduce((a,b)=>a+b,0)/items.length;
+    score[t] = round0((mean-1)/4*100);
+    calc[t] = `answers ${vals[t].join(", ")} → mean ${r2(mean)}\nscore = (${r2(mean)} − 1) ÷ 4 × 100 = ${score[t]}`;
+  });
+  return { score, calc, vals, code: hollandCode(score, null) };
+}
+function scoreGameB(levels){ // levels: {E1: 1..4, ...}
+  const out={};
+  TRAITS.forEach(tr => {
+    const sc = B_SCENES.filter(s => s.trait===tr);
+    const lv = sc.map(s => levels[s.id]);
+    const mean = lv.reduce((a,b)=>a+b,0)/lv.length;
+    const score = round0((mean-1)/3*100);
+    out[tr] = { levels: lv, scenes: sc.map(s=>s.id), mean, score,
+      calc: `levels ${lv.join(", ")} → mean ${r2(mean)}\nscore = (${r2(mean)} − 1) ÷ 3 × 100 = ${score}` };
+  });
+  return out;
+}
+function scoreLikert(items, answers){ // returns score, calc
+  const raw = items.map(i => answers[i.id]);
+  const keyed = items.map((i,k) => i.key===1 ? raw[k] : 6-raw[k]);
+  const mean = keyed.reduce((a,b)=>a+b,0)/keyed.length;
+  const score = round0((mean-1)/4*100);
+  const parts = items.map((i,k) => i.key===1 ? `${raw[k]}` : `${raw[k]}→${keyed[k]}`);
+  return { raw, keyed, mean, score, calc:`answers (− items reversed 6 − x): ${parts.join(", ")} → mean ${r2(mean)}\nscore = (${r2(mean)} − 1) ÷ 4 × 100 = ${score}` };
+}
+function scoreMiniIPIP(answers){
+  const out={};
+  TRAITS.forEach(tr => { out[tr] = scoreLikert(MINI_IPIP.filter(i=>i.trait===tr), answers); });
+  return out;
+}
+function scoreGameC(results){ // results: [{n, seconds, guesses, outcome}]
+  const rows = results.map(r => {
+    const lock = C_LOCKS.find(l => l.n===r.n);
+    const active = lock.solvable ? null : Math.min(r.seconds, r.guesses*C_SEC_PER_GUESS);
+    const flag = !lock.solvable && r.seconds > 30 && active < r.seconds/2;
+    return { ...r, solvable: lock.solvable, active, flag };
+  });
+  const uns = rows.filter(r => !r.solvable);
+  const meanActive = uns.reduce((a,r)=>a+r.active,0)/uns.length;
+  const meanRaw = uns.reduce((a,r)=>a+r.seconds,0)/uns.length;
+  const score = round0(Math.min(1, meanActive/C_LIMIT)*100);
+  const solved = rows.filter(r => r.solvable && r.outcome==="solved").length;
+  const lines = uns.map(r => `lock ${r.n}: min(${r1(r.seconds)} s, ${r.guesses} guesses × ${C_SEC_PER_GUESS} s) = ${r1(r.active)} s${r.flag?"  [flag: waiting, not trying]":""}`);
+  return { rows, meanActive, meanRaw, score, solved, flags: uns.filter(r=>r.flag).length,
+    calc: lines.join("\n") + `\nmean active = ${r1(meanActive)} s\nscore = ${r1(meanActive)} ÷ ${C_LIMIT} × 100 = ${score}` };
+}
+function r1(x){ return Math.round(x*10)/10; }
+
+function compareScores(game, self){
+  const gap = Math.abs(game-self), avg = round0((game+self)/2);
+  return { gap, avg, label: gapLabel(gap), band: band(avg) };
+}
+
+function buildProfile(data){ // data: {A:{picks}, B:{levels}, C:{results}, SR:{answers}}
+  const gA = scoreGameA(data.A.picks);
+  const sI = scoreInterestSR(data.SR.answers);
+  const shared = gA.code.split("").filter(l => sI.code.includes(l));
+  const combined = {}; TYPES.forEach(t => combined[t] = round0((gA.score[t]+sI.score[t])/2));
+  const combinedCode = hollandCode(combined, gA.most);
+  const interest = { game:gA, self:sI, shared, label: overlapLabel(shared.length), combined, combinedCode,
+    rule:`game code ${gA.code}, self-report code ${sI.code}; shared letters: ${shared.length ? shared.join(", ") : "none"} (${shared.length}) → ${overlapLabel(shared.length)}\ncombined score per type = (game + self-report) ÷ 2; combined code ${combinedCode}` };
+
+  const gB = scoreGameB(data.B.levels);
+  const sM = scoreMiniIPIP(data.SR.answers);
+  const traits = {};
+  TRAITS.forEach(tr => {
+    const c = compareScores(gB[tr].score, sM[tr].score);
+    traits[tr] = { game:gB[tr], self:sM[tr], ...c, sentence: SENTENCES[tr][c.band],
+      rule:`gap = |${gB[tr].score} − ${sM[tr].score}| = ${c.gap} → ${c.label} (≤20 consistent, 21–35 mixed, >35 conflicting)\naverage = (${gB[tr].score} + ${sM[tr].score}) ÷ 2 = ${c.avg} → ${BAND_LABEL[c.band]} band → sentence ${tr}-${c.band}` };
+  });
+
+  const gC = scoreGameC(data.C.results);
+  const sP = scoreLikert(PERSIST_ITEMS, data.SR.answers);
+  const pc = compareScores(gC.score, sP.score);
+  const persistence = { game:gC, self:sP, ...pc, sentence: SENTENCES.P[pc.band],
+    rule:`gap = |${gC.score} − ${sP.score}| = ${pc.gap} → ${pc.label}\naverage = ${pc.avg} → ${BAND_LABEL[pc.band]} band → sentence P-${pc.band}` };
+
+  return { version: VERSION, interest, traits, persistence };
+}
+</script>
+
+<!-- ===== APP ===== -->
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const now = () => performance.now();
+const iso = () => new Date().toISOString();
+const typeColor = t => `var(--t-${t.toLowerCase()})`;
+
+const STEPS = [["setup","Start"],["A","Interests"],["B","Story"],["C","Locks"],["SR","Mirror"],["results","Results"]];
+
+function freshState(){
+  return {
+    screen:"welcome", example:false, startedAt:null, finishedAt:null,
+    setup:{ adult:false, consent:false, stage:"", field:"", nickname:"" },
+    A:{ i:0, picks:[], sel:{most:null, least:null, changes:0}, t0:0 },
+    B:{ i:0, levels:{}, log:[], sel:null, changes:0, t0:0 },
+    C:{ i:0, results:[], phase:"play", cur:null },
+    SR:{ block:0, deckI:-1, answers:{}, times:{}, t0:0, practice:null, practice2:null, flash:"", lock:false },
+    reactions:{}, notes:{}, tab:"student",
+    ai:{ enabled:false, key:"", model:"gpt-4o-mini", baseUrl:"https://api.openai.com/v1", log:[], busy:false, server:false, serverKey:false, error:"" },
+    profile:null
+  };
+}
+let S = window.claude?.hot?.data?.S || freshState();
+if (S.ai) S.ai.key = ""; // never restore a key
+window.claude?.hot?.snapshot?.(() => ({ S: { ...S, ai: { ...S.ai, key:"" } } }));
+
+const STEP_ORDER = ["welcome","setup","A","B","C","SR","results"];
+function renderRoute(){
+  const cur = S.screen === "debriefC" ? "C" : S.screen;
+  const ci = STEPS.findIndex(s => s[0]===cur);
+  $("#route").innerHTML = STEPS.map((s,i) => {
+    const cls = ci<0 ? "" : i<ci ? "done" : i===ci ? "now" : "";
+    return (i? `<span class="seg ${ci>=0 && i<=ci?"done":""}"></span>`:"") + `<span class="wp ${cls}" title="${s[1]}"><i></i><b>${s[1]}</b></span>`;
+  }).join("");
+  $("#aiBtn").classList.toggle("on", S.ai.enabled);
+  $("#aiBtn").setAttribute("aria-pressed", S.ai.enabled ? "true" : "false");
+}
+function go(screen){ clearTimer(); S.screen = screen; render(); window.scrollTo({top:0}); }
+function render(){
+  renderRoute();
+  const f = SCREENS[S.screen] || SCREENS.welcome;
+  $("#app").innerHTML = `<section class="screen">${f()}</section>`;
+  AFTER[S.screen]?.();
+}
+
+/* ---------- screens ---------- */
+const SCREENS = {};
+const AFTER = {};
+
+SCREENS.welcome = () => `
+  <div class="hero">
+    <div class="eyebrow">Prototype ${VERSION} · for students aged 18+ finishing college or university</div>
+    <h1>Find out what kind of work <em>pulls you</em>, by playing.</h1>
+    <p class="muted">Three short games and a mirror round, about 25 minutes. You get a profile of your work interests and working style, with every statement traced back to what you did and how it was scored. You decide which statements fit.</p>
+  </div>
+  <div class="legs">
+    <div class="leg"><span class="eyebrow">Game A · 5 min</span><h3>Activity Island</h3><p class="small muted">Pick the work you'd most and least enjoy, 12 times.</p></div>
+    <div class="leg"><span class="eyebrow">Game B · 5 min</span><h3>Story Choices</h3><p class="small muted">Ten moments from your last term. What would you do?</p></div>
+    <div class="leg"><span class="eyebrow">Game C · up to 12 min</span><h3>Stubborn Lock</h3><p class="small muted">Word locks. Some are harder than they look.</p></div>
+  </div>
+  <div class="note">This is a research prototype, not a validated test. Results are starting points for reflection. Everything stays in this browser tab unless you copy it out.</div>
+  <div class="row">
+    <button class="btn" data-act="start">Start</button>
+    <button class="btn ghost" data-act="example">See an example report</button>
+  </div>`;
+
+SCREENS.setup = () => `
+  <div class="stack-sm"><span class="eyebrow">Before you start</span><h2>A few details</h2></div>
+  <div class="panel stack">
+    <label class="check"><input type="checkbox" id="adult" ${S.setup.adult?"checked":""}> <span>I am 18 or older.</span></label>
+    <label class="field">Where are you in your studies?
+      <select id="stage">
+        ${["","Final year of a bachelor's degree","Recently graduated (within 2 years)","Master's student","Other"].map(o=>`<option value="${esc(o)}" ${S.setup.stage===o?"selected":""}>${o||"Choose one"}</option>`).join("")}
+      </select></label>
+    <label class="field">Field of study <span class="small muted" style="font-weight:400">Optional. Shown in your report only; never scored.</span>
+      <input type="text" id="field" value="${esc(S.setup.field)}" placeholder="e.g. Computer Science"></label>
+    <label class="field">Nickname <span class="small muted" style="font-weight:400">Optional. Never sent to AI.</span>
+      <input type="text" id="nickname" value="${esc(S.setup.nickname)}" placeholder="e.g. Sana"></label>
+    <div class="hr"></div>
+    <div class="stack-sm small">
+      <b>What happens to your answers</b>
+      <p>Your choices, times and answers are scored in this browser with fixed rules. Nothing is sent anywhere unless you turn on AI mode, which sends only your scores and reactions. Some puzzles in Game C may be harder than they look; the game explains this at the end.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="consent" ${S.setup.consent?"checked":""}> <span>I understand this is a prototype and agree to take part.</span></label>
+  </div>
+  <div class="row"><button class="btn" data-act="setupNext" id="setupNext">Go to Game A</button><button class="btn ghost" data-act="home">Back</button></div>`;
+AFTER.setup = () => {
+  const upd = () => { $("#setupNext").disabled = !($("#adult").checked && $("#consent").checked && $("#stage").value); };
+  ["adult","consent","stage"].forEach(id => $("#"+id).addEventListener("change", upd)); upd();
+};
+
+function progress(i, n, label){
+  return `<div class="prog"><span class="eyebrow num">${label} ${Math.min(i+1,n)} / ${n}</span><div class="track"><div class="fill" style="width:${(i/n)*100}%"></div></div></div>`;
+}
+
+SCREENS.A = () => {
+  const rd = A_ROUNDS[S.A.i], sel = S.A.sel;
+  return `
+  <div class="stack-sm"><span class="eyebrow">Game A · Activity Island</span>
+    <h2>${S.A.i===0?"Your first week on the island.":"Another day on the island."} Which would you most enjoy, and which least?</h2></div>
+  ${progress(S.A.i, A_ROUNDS.length, "Round")}
+  <div class="cards">${rd.cards.map(c => `
+    <div class="ticket ${sel.most===c.type?"most":""} ${sel.least===c.type?"least":""}">
+      <div class="art">${icon(c.icon, 34)}</div>
+      <p>${esc(c.text)}</p>
+      <div class="pickrow">
+        <button class="pick m ${sel.most===c.type?"on":""}" data-act="aPick" data-kind="most" data-t="${c.type}" aria-pressed="${sel.most===c.type}">Most</button>
+        <button class="pick l ${sel.least===c.type?"on":""}" data-act="aPick" data-kind="least" data-t="${c.type}" aria-pressed="${sel.least===c.type}">Least</button>
+      </div>
+    </div>`).join("")}</div>
+  <p class="small muted">Think about the activity itself, not the pay or whether you're trained for it yet.</p>
+  <div class="row"><button class="btn" data-act="aNext" ${sel.most&&sel.least?"":"disabled"}>${S.A.i===A_ROUNDS.length-1?"Finish Game A":"Next round"}</button></div>`;
+};
+AFTER.A = () => { if (!S.A.t0) S.A.t0 = now(); };
+
+SCREENS.B = () => {
+  const sc = B_SCENES[S.B.i];
+  return `
+  <div class="stack-sm"><span class="eyebrow">Game B · Story Choices</span><h2>${esc(sc.title)}</h2></div>
+  ${progress(S.B.i, B_SCENES.length, "Scene")}
+  <div class="scene">
+    <div class="scene-art">${icon(sc.icon, 44)}</div>
+    <p class="quote">${esc(sc.text)}</p>
+    <div class="stack-sm">${sc.order.map((oi,k) => `
+      <button class="opt ${S.B.sel===oi?"on":""}" data-act="bPick" data-o="${oi}" aria-pressed="${S.B.sel===oi}"><span class="k">${"ABCD"[k]}</span><span>${esc(sc.options[oi])}</span></button>`).join("")}</div>
+  </div>
+  <p class="small muted">There are no right answers. Pick what you would most likely do, not what you think you should do.</p>
+  <div class="row"><button class="btn" data-act="bNext" ${S.B.sel===null?"disabled":""}>${S.B.i===B_SCENES.length-1?"Finish Game B":"Next scene"}</button></div>`;
+};
+AFTER.B = () => { if (!S.B.t0) S.B.t0 = now(); };
+
+/* Game C */
+let timerId = null;
+function clearTimer(){ if (timerId){ clearInterval(timerId); timerId=null; } }
+SCREENS.C = () => {
+  if (S.C.phase === "intro") return `
+    <div class="stack-sm"><span class="eyebrow">Game C · Stubborn Lock</span><h2>Eight word locks</h2></div>
+    <div class="panel stack">
+      <p>Each lock opens with a six-letter English word that uses <b>all</b> the letters shown, once each. Tap the letters to build it.</p>
+      <p>Take as long as you like, up to 90 seconds per lock. You can <b>skip</b> any lock at any time.</p>
+      <div class="note small"><b>Example:</b> letters <span class="mono">S T E N O H</span> open with <span class="mono">HONEST</span>.</div>
+    </div>
+    <div class="row"><button class="btn" data-act="cBegin">Start the first lock</button></div>`;
+  const lock = C_LOCKS[S.C.i];
+  return `
+    <div class="stack-sm"><span class="eyebrow">Game C · Stubborn Lock</span><h2>Lock ${lock.n}</h2></div>
+    ${progress(S.C.i, C_LOCKS.length, "Lock")}
+    <div class="lock">
+      <div class="padlock" id="cPad">${icon("lock", 40)}</div>
+      <div class="slots" id="cSlots" aria-label="Your word so far"></div>
+      <div class="tiles" id="cTiles" role="group" aria-label="Letters"></div>
+      <div class="row" style="justify-content:center">
+        <button class="iconbtn" data-act="cDel" type="button">${icon("delete",16)} Delete</button>
+        <button class="iconbtn" data-act="cClear" type="button">Clear</button>
+        <button class="iconbtn" data-act="cShuffle" type="button">${icon("shuffle",16)} Shuffle</button>
+      </div>
+      <div class="fb" id="cFb" role="status"></div>
+      <div class="row small muted num" style="justify-content:center;gap:18px"><span class="timer" id="cTimer">90 s left</span><span id="cCount">Guesses: 0</span></div>
+    </div>
+    <p class="small muted" style="text-align:center">Tap letters or type them. A guess is tried when all six slots are filled.</p>
+    <div class="row"><button class="btn ghost" data-act="cSkip">Skip this lock</button></div>`;
+};
+function lockUI(){
+  const lock = C_LOCKS[S.C.i], cur = S.C.cur; if (!cur) return;
+  const slots = $("#cSlots"), tiles = $("#cTiles"); if (!slots) return;
+  slots.innerHTML = Array.from({length:6}, (_,k) => `<div class="slot ${cur.picked[k]!=null?"full":""}">${cur.picked[k]!=null ? lock.letters[cur.picked[k]] : ""}</div>`).join("");
+  tiles.innerHTML = cur.order.map(ix => `<button class="tile" type="button" data-act="cTile" data-ix="${ix}" ${cur.picked.includes(ix)?"disabled":""} aria-label="Letter ${lock.letters[ix]}">${lock.letters[ix]}</button>`).join("");
+  $("#cCount").textContent = `Guesses: ${cur.guesses}`;
+}
+function lockPick(ix){
+  const cur = S.C.cur; if (!cur || cur.busy || cur.picked.includes(ix) || cur.picked.length >= 6) return;
+  cur.picked.push(ix); $("#cFb").textContent = ""; lockUI();
+  if (cur.picked.length === 6){ cur.busy = true; setTimeout(lockSubmit, 220); }
+}
+function lockSubmit(){
+  const lock = C_LOCKS[S.C.i], cur = S.C.cur; if (!cur) return;
+  const g = cur.picked.map(ix => lock.letters[ix]).join(""), fb = $("#cFb");
+  cur.guesses++; cur.list.push(g);
+  if (lock.solvable && g === lock.answer){
+    fb.className = "fb good"; fb.textContent = "Unlocked!"; $("#cPad").innerHTML = icon("lock-open", 40); $("#cPad").classList.add("open");
+    lockUI(); finishLock("solved");
+  } else {
+    fb.className = "fb bad"; fb.textContent = `${g} doesn't open it. Keep trying or skip.`;
+    $("#cSlots")?.classList.add("shake"); setTimeout(() => $("#cSlots")?.classList.remove("shake"), 400);
+    cur.picked = []; cur.busy = false; lockUI();
+  }
+}
+AFTER.C = () => {
+  if (S.C.phase !== "play") return;
+  const lock = C_LOCKS[S.C.i];
+  if (!S.C.cur || S.C.cur.n !== lock.n) S.C.cur = { n:lock.n, t0:now(), guesses:0, list:[], picked:[], order:[0,1,2,3,4,5], shuffles:0, busy:false };
+  const cur = S.C.cur;
+  lockUI();
+  const tick = () => {
+    const el = (now()-cur.t0)/1000, left = Math.max(0, C_LIMIT-el);
+    const t = $("#cTimer"); if (t) t.textContent = `${Math.ceil(left)} s left`;
+    if (left <= 0) finishLock("timeout");
+  };
+  clearTimer(); timerId = setInterval(tick, 250); tick();
+};
+document.addEventListener("keydown", e => {
+  if (S.screen !== "C" || S.C.phase !== "play" || !S.C.cur || e.metaKey || e.ctrlKey || e.altKey) return;
+  const lock = C_LOCKS[S.C.i], cur = S.C.cur;
+  if (e.key === "Backspace"){ e.preventDefault(); if (!cur.busy){ cur.picked.pop(); lockUI(); } return; }
+  if (e.key === "Escape"){ if (!cur.busy){ cur.picked = []; lockUI(); } return; }
+  const k = e.key.toUpperCase();
+  if (/^[A-Z]$/.test(k)){ const ix = cur.order.find(i => lock.letters[i] === k && !cur.picked.includes(i)); if (ix != null) lockPick(ix); }
+});
+function finishLock(outcome){
+  if (!S.C.cur) return;
+  clearTimer();
+  const cur = S.C.cur, seconds = Math.min(C_LIMIT, (now()-cur.t0)/1000);
+  S.C.results.push({ n:cur.n, seconds: Math.round(seconds*10)/10, guesses:cur.guesses, guessList:cur.list, shuffles:cur.shuffles||0, outcome, at: iso() });
+  S.C.cur = null;
+  const next = () => { if (S.C.i < C_LOCKS.length-1){ S.C.i++; render(); } else go("debriefC"); };
+  if (outcome === "solved") setTimeout(next, 700); else next();
+}
+
+SCREENS.debriefC = () => {
+  const rows = S.C.results.map(r => { const l = C_LOCKS.find(x=>x.n===r.n); return `<tr><td class="n">${r.n}</td><td class="n">${l.letters}</td><td>${l.solvable? l.answer : "<b>No answer</b>"}</td><td>${r.outcome}</td><td class="n">${r.seconds} s</td></tr>`; }).join("");
+  return `
+  <div class="stack-sm"><span class="eyebrow">Game C · Debrief</span><h2>Three of those locks had no answer.</h2></div>
+  <p>Locks 3, 5 and 7 cannot be opened: no English word uses all six letters. We checked them against a 234,000-word dictionary. The game measures how long and how actively you kept trying on those three, which researchers use as a sign of persistence. Moving on from an impossible task can also be a smart choice, so this describes a habit, not a grade.</p>
+  <div class="tablewrap"><table><thead><tr><th>Lock</th><th>Letters</th><th>Answer</th><th>Outcome</th><th>Time</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="row"><button class="btn" data-act="toSR">Go to the mirror round</button></div>`;
+};
+
+/* Mirror round: same items and 1–5 values as a questionnaire, played as a card deck and a picture board */
+function face(v, size=30){
+  const c = [-4.5,-2.2,0,2.2,4.5][v-1];
+  const mouth = c === 0 ? `<path d="M8 15.5h8"/>` : `<path d="M7.5 ${15.5-c/2}Q12 ${15.5+c} 16.5 ${15.5-c/2}"/>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="9.5" r="1" fill="currentColor"/><circle cx="15" cy="9.5" r="1" fill="currentColor"/>${mouth}</svg>`;
+}
+SCREENS.SR = () => S.SR.block === 0 ? deckScreen() : boardScreen();
+function deckScreen(){
+  const i = S.SR.deckI;
+  const head = `<div class="stack-sm"><span class="eyebrow">Mirror round · part 1 of 2 · Is this you?</span>
+    <h2>Drag each card to where it fits you.</h2>
+    <p class="muted">Describe yourself as you generally are now, not as you wish to be. Tap a zone, drag the card, or press 1–5.</p></div>`;
+  if (i >= DECK.length) return head + `
+    <div class="panel stack" style="align-items:flex-start"><h3>All ${DECK.length} cards sorted.</h3><p class="muted">Next, rate some jobs on a picture board.</p>
+    <div class="row"><button class="btn" data-act="srNext">Go to the job board</button><button class="btn ghost" data-act="deckUndo">Undo last card</button></div></div>`;
+  const practice = i === -1, it = practice ? null : DECK[i];
+  const prev = practice ? null : S.SR.answers[it.id];
+  return head + `
+    ${practice ? "" : progress(i, DECK.length, "Card")}
+    <div class="deck-area">
+      <div class="deck-stack">
+        ${!practice && i < DECK.length-1 ? `<div class="deck-shadow"></div>` : ""}
+        <div class="deck-card ${practice?"practice":""}" id="deckCard" tabindex="-1">
+          <span class="eyebrow">${practice ? "Practice card · not scored" : "I\u2026"}</span>
+          <p class="deck-text">${practice ? "Enjoy spicy food." : esc(it.text)}</p>
+          ${practice ? `<p class="small muted">Read each card as if it starts with \u201cI\u201d. If you usually order the spicy option, drop it on Kind of me.</p>` : ""}
+          ${S.SR.flash && !practice ? `<p class="small" style="color:var(--accent)">${esc(S.SR.flash)}</p>` : ""}
+        </div>
+      </div>
+      <div class="zones" id="zones">${ZONES.map(([v,anchor,friendly]) => `
+        <button class="zone z${v} ${prev===v?"on":""}" data-act="zone" data-v="${v}" type="button">
+          <span class="zf">${face(v,26)}</span><b>${friendly}</b><span class="za">${anchor}</span></button>`).join("")}</div>
+    </div>
+    ${i > 0 ? `<div class="row"><button class="btn ghost small" data-act="deckUndo">Undo last card</button></div>` : ""}`;
+}
+function boardScreen(){
+  const A = S.SR.answers, n = INTEREST_ITEMS.filter(i => A[i.id]).length;
+  const tile = (id, ic, text, val, practice) => `
+    <div class="job ${val?"rated":""} ${practice?"practice":""}" id="job-${id}">
+      <div class="job-top"><span class="art">${icon(ic, 26)}</span>${practice?`<span class="eyebrow">Practice · not scored</span>`:""}</div>
+      <p>${esc(text)}</p>
+      <div class="faces" role="group" aria-label="How much would you enjoy: ${esc(text)}">${LIKE_SCALE.map((lab,k) => `
+        <button class="facebtn ${val===k+1?"on":""}" data-act="face" data-id="${id}" data-v="${k+1}" type="button" title="${lab}" aria-label="${lab}" aria-pressed="${val===k+1}">${face(k+1,24)}</button>`).join("")}</div>
+      <div class="facelab small muted">${val ? LIKE_SCALE[val-1] : "&nbsp;"}</div>
+    </div>`;
+  return `<div class="stack-sm"><span class="eyebrow">Mirror round · part 2 of 2 · Dream job board</span>
+    <h2>How much would you enjoy doing this as part of your job?</h2>
+    <p class="muted">Tap a face on each picture. From frowning (strongly dislike) to beaming (strongly like).</p></div>
+    <div class="board">${tile("practice","utensils","Plan the menu for a large wedding", S.SR.practice2, true)}
+    ${INTEREST_ITEMS.map(i => tile(i.id, i.icon, i.text, A[i.id], false)).join("")}</div>
+    <div class="row"><button class="btn" data-act="srNext" id="boardNext" ${n===INTEREST_ITEMS.length?"":"disabled"}>See my results</button>
+    <span class="small muted num" id="boardCount">${n} of ${INTEREST_ITEMS.length} rated</span></div>`;
+}
+function deckAnswer(v){
+  const i = S.SR.deckI; if (S.SR.lock) return;
+  if (i === -1){ S.SR.practice = v; S.SR.deckI = 0; S.SR.flash = "Practice done. From here on, every card counts."; S.SR.t0 = 0; render(); return; }
+  if (i >= DECK.length) return;
+  const it = DECK[i]; S.SR.answers[it.id] = v; S.SR.times[it.id] = S.SR.t0 ? Math.round(now()-S.SR.t0) : null; S.SR.flash = "";
+  const card = $("#deckCard"), zone = $(`.zone.z${v}`);
+  S.SR.lock = true;
+  if (card && zone){ const a = card.getBoundingClientRect(), b = zone.getBoundingClientRect();
+    card.style.transition = "transform .18s ease-in, opacity .18s"; card.style.transform = `translate(${b.left+b.width/2-(a.left+a.width/2)}px, ${b.top-(a.top+a.height/2)}px) scale(.35)`; card.style.opacity = "0"; }
+  setTimeout(() => { S.SR.lock = false; S.SR.deckI++; S.SR.t0 = 0; render(); }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 190);
+}
+AFTER.SR = () => {
+  if (S.SR.block !== 0) return;
+  if (!S.SR.t0) S.SR.t0 = now();
+  const card = $("#deckCard"); if (!card) return;
+  let sx=0, sy=0, drag=false, over=null;
+  const zoneAt = (x,y) => [...document.querySelectorAll(".zone")].find(z => { const r = z.getBoundingClientRect(); return x>=r.left-6 && x<=r.right+6 && y>=r.top-24 && y<=r.bottom+6; });
+  card.addEventListener("pointerdown", e => { drag = true; sx = e.clientX; sy = e.clientY; card.setPointerCapture(e.pointerId); card.classList.add("dragging"); });
+  card.addEventListener("pointermove", e => {
+    if (!drag) return; const dx = e.clientX-sx, dy = e.clientY-sy;
+    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx/18}deg)`;
+    const z = zoneAt(e.clientX, e.clientY); if (z !== over){ over?.classList.remove("hot"); over = z; over?.classList.add("hot"); }
+  });
+  const end = e => { if (!drag) return; drag = false; card.classList.remove("dragging");
+    const z = zoneAt(e.clientX, e.clientY); over?.classList.remove("hot"); over = null;
+    if (z) deckAnswer(+z.dataset.v); else { card.style.transition = "transform .15s"; card.style.transform = ""; setTimeout(()=>{ card.style.transition=""; },160); } };
+  card.addEventListener("pointerup", end); card.addEventListener("pointercancel", end);
+};
+document.addEventListener("keydown", e => {
+  if (S.screen !== "SR" || S.SR.block !== 0 || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (/^[1-5]$/.test(e.key)) deckAnswer(+e.key);
+  else if (e.key === "Backspace" && S.SR.deckI > 0){ e.preventDefault(); S.SR.deckI--; S.SR.t0 = 0; render(); }
+});
+
+/* Results */
+function scoreBar(label, game, self, color){
+  return `<div class="barrow"><span class="lbl">${esc(label)}</span>
+    <div class="btrack" role="img" aria-label="${esc(label)}: game ${game}, self-report ${self}"><div class="g" style="width:${game}%;background:${color}"></div><div class="s" style="left:calc(${self}% - 1.5px)"></div></div>
+    <span class="mono small num">${game} · ${self}</span></div>`;
+}
+function stmtCard(id, title, label, text, extra){
+  const r = S.reactions[id];
+  const conflict = label === "conflicting";
+  return `<div class="stmt" id="st-${id}">
+    <div class="head"><span class="eyebrow">${esc(title)}</span><span class="pill ${label}">${label}</span></div>
+    <p class="text">${esc(text)}</p>
+    ${extra ? `<p class="small muted">${extra}</p>` : ""}
+    <div class="react" role="group" aria-label="Does this fit you?">
+      ${(conflict ? [["game","The story is closer"],["self","My answers are closer"],["neither","Neither"]] : [["yes","That's me"],["partly","Partly"],["no","Not me"]])
+        .map(([v,l]) => `<button class="${r===v?"on":""}" data-act="react" data-id="${id}" data-v="${v}" aria-pressed="${r===v}">${l}</button>`).join("")}
+      <a href="#ev-${id}" class="small" data-act="toEvidence" data-id="${id}" style="margin-left:auto;align-self:center">How was this worked out?</a>
+    </div>
+    <textarea id="note-${id}" data-act="note" data-id="${id}" placeholder="Optional: why does it fit or not?" aria-label="Your note">${esc(S.notes[id]||"")}</textarea>
+  </div>`;
+}
+const MIXED_NOTE = "Your play and your answers lean the same way, but not strongly.";
+function traitStatement(tr, t){
+  if (t.label === "conflicting") return `Your choices in the story and your answers point in different directions for ${TRAIT_INFO[tr].plain.toLowerCase()}. Which feels more like you?`;
+  return t.sentence;
+}
+
+SCREENS.results = () => {
+  const P = S.profile; if (!P) return `<p>No results yet.</p>`;
+  const tab = S.tab;
+  const nick = S.setup.nickname ? `${esc(S.setup.nickname)}'s` : "Your";
+  const head = `
+    ${S.example ? `<div class="banner"><b>Example data.</b> This report was generated from made-up answers to show what the prototype produces. It is not a real person.</div>`:""}
+    <div class="stack-sm"><span class="eyebrow">Results · prototype ${VERSION}</span><h1>${nick} profile</h1>
+    <p class="muted">Scores come from fixed rules. Each statement shows how well your play and your answers agreed. Mark what fits; your reactions go into the evidence report.</p></div>
+    <div class="tabs" role="tablist">
+      <button class="tab ${tab==="student"?"on":""}" role="tab" aria-selected="${tab==="student"}" data-act="tab" data-v="student">Your report</button>
+      <button class="tab ${tab==="evidence"?"on":""}" role="tab" aria-selected="${tab==="evidence"}" data-act="tab" data-v="evidence">Evidence report</button>
+    </div>`;
+  return head + (tab === "student" ? studentReport(P) : evidenceReport(P));
+};
+
+function studentReport(P){
+  const I = P.interest, code = I.combinedCode;
+  const top2 = code.slice(0,2).split("");
+  const interestText = I.label === "conflicting"
+    ? `Your game choices pointed to ${I.game.code.split("").map(t=>TYPE_INFO[t].name).join(", ")} work, but your answers pointed to ${I.self.code.split("").map(t=>TYPE_INFO[t].name).join(", ")}. Which feels closer?`
+    : `Your strongest pull is toward ${TYPE_INFO[code[0]].name.toLowerCase()} work: ${TYPE_INFO[code[0]].desc}, followed by ${TYPE_INFO[code[1]].name.toLowerCase()} work.`;
+  const traitBars = TRAITS.map(tr => scoreBar(TRAIT_INFO[tr].plain, P.traits[tr].game.score, P.traits[tr].self.score, "var(--accent)")).join("");
+  return `
+  <div class="panel stack">
+    <div class="row" style="justify-content:space-between;align-items:flex-end">
+      <div class="stack-sm"><span class="eyebrow">Your work-interest code</span>
+        <div class="code">${code.split("").map(t=>`<div class="letter" style="background:${typeColor(t)}">${t}<small>${TYPE_INFO[t].short}</small></div>`).join("")}</div></div>
+      <p class="small muted" style="max-width:300px">Combined from Game A and the interest questions. Scores compare your own interests with each other, not with other people.</p>
+    </div>
+    <div class="bars">${TYPES.map(t => scoreBar(TYPE_INFO[t].name, I.game.score[t], I.self.score[t], typeColor(t))).join("")}</div>
+    <div class="legend"><span><i class="sw"></i>Game score</span><span><i class="sw tick"></i>Your answers</span><span class="mono">numbers: game · answers, 0–100</span></div>
+  </div>
+  ${stmtCard("interest","Work interests", I.label, interestText, I.label==="mixed"?MIXED_NOTE:"")}
+  <div class="stack-sm"><h3>Fields worth exploring</h3><p class="small muted">Broad fields linked to your top two interest types. They are places to look, not recommendations.</p></div>
+  <div class="fields">${top2.map(t => `<div class="panel"><span class="eyebrow" style="color:${typeColor(t)}">${TYPE_INFO[t].name}</span><ul>${FIELDS[t].map(f=>`<li>${esc(f)}</li>`).join("")}</ul></div>`).join("")}</div>
+  <div class="stack-sm"><h3>How you tend to work</h3></div>
+  <div class="panel stack"><div class="bars">${traitBars}</div>
+    <div class="legend"><span><i class="sw"></i>Game B</span><span><i class="sw tick"></i>Personality questions</span></div></div>
+  ${TRAITS.map(tr => stmtCard(tr, TRAIT_INFO[tr].plain, P.traits[tr].label, traitStatement(tr, P.traits[tr]), P.traits[tr].label==="mixed"?MIXED_NOTE:"")).join("")}
+  ${stmtCard("P","Hard problems", P.persistence.label,
+     P.persistence.label==="conflicting" ? "How long you kept trying on the locks and how you describe yourself point different ways. Which feels more like you?" : P.persistence.sentence,
+     `You opened ${P.persistence.game.solved} of 5 solvable locks. Moving on from impossible tasks can be a good strategy; this describes a habit, not a grade.`)}
+  ${coachPanel(P)}
+  <div class="row"><button class="btn ghost" data-act="tab" data-v="evidence">Open the evidence report</button><button class="btn ghost" data-act="restart">Start a new session</button></div>`;
+}
+
+function refLink(k){ const r = REFS[k]; return `<a href="${r.url}" target="_blank" rel="noopener">${esc(r.label)}</a>`; }
+function evBlock(id, title, label, statement, evidenceHTML, calc, basis){
+  const r = S.reactions[id], note = S.notes[id];
+  return `<details id="ev-${id}" ${S.openEv===id?"open":""}><summary><span>${esc(title)}</span><span class="pill ${label}">${label}</span></summary>
+    <dl>
+      <dt>Statement</dt><dd>${esc(statement)}</dd>
+      <dt>Evidence</dt><dd>${evidenceHTML}</dd>
+      <dt>Rule</dt><dd><div class="calc">${esc(calc)}</div></dd>
+      <dt>Basis</dt><dd>${basis}</dd>
+      <dt>Student</dt><dd>${r ? esc(r) : "<span class='muted'>no reaction yet</span>"}${note ? ` · “${esc(note)}”` : ""}</dd>
+    </dl></details>`;
+}
+function evidenceReport(P){
+  const I = P.interest;
+  const sceneLine = sid => { const sc = B_SCENES.find(s=>s.id===sid), lv = S.B.levels[sid]; return `${esc(sc.title)} → “${esc(sc.options[lv-1])}” (level ${lv})`; };
+  const itemLine = (it, scale) => `${esc(it.text)} → ${esc(scale[S.SR.answers[it.id]-1])} (${S.SR.answers[it.id]}${it.key===-1?", reversed":""})`;
+
+  const interestEv = `<b>Game A</b><div class="calc">${TYPES.map(t=>`${t} ${TYPE_INFO[t].name}: ${I.game.calc[t].replace("\n","; ")}`).join("\n")}</div>
+    <b>Interest questions</b><div class="calc">${TYPES.map(t=>`${t}: ${I.self.calc[t].replace("\n","; ")}`).join("\n")}</div>`;
+  const blocks = [
+    evBlock("interest","Work interests", I.label, `Combined code ${I.combinedCode}`, interestEv, I.rule,
+      `${refLink("onet")}; ${refLink("nye")}. Activity cards and interest items written for this prototype in O*NET work-activity style; not validated. Tie-break: more “most” picks, then order R, I, A, S, E, C.`),
+    ...TRAITS.map(tr => { const t = P.traits[tr];
+      return evBlock(tr, `${TRAIT_INFO[tr].plain} (${TRAIT_INFO[tr].name})`, t.label, traitStatement(tr,t),
+        `<b>Game B</b><ul>${t.game.scenes.map(s=>`<li>${sceneLine(s)}</li>`).join("")}</ul><div class="calc">${esc(t.game.calc)}</div>
+         <b>Mini-IPIP</b><ul>${MINI_IPIP.filter(i=>i.trait===tr).map(i=>`<li>${itemLine(i, ACC_SCALE)}</li>`).join("")}</ul><div class="calc">${esc(t.self.calc)}</div>`,
+        t.rule, `${refLink("miniipip")} (public-domain IPIP items). Scenes written for this prototype. ${refLink("dang")}.`); }),
+    evBlock("P","Hard problems (persistence)", P.persistence.label, P.persistence.sentence,
+      `<b>Game C</b><div class="calc">${esc(P.persistence.game.calc)}</div>
+       <b>Persistence items</b><ul>${PERSIST_ITEMS.map(i=>`<li>${itemLine(i, ACC_SCALE)}</li>`).join("")}</ul><div class="calc">${esc(P.persistence.self.calc)}</div>
+       <p class="small">Solvable locks opened: ${P.persistence.game.solved} of 5 (reported, not scored). Locks flagged “waiting, not trying”: ${P.persistence.game.flags}.</p>`,
+      P.persistence.rule, `${refLink("ventura")}; ${refLink("palaoag")}. Persistence items written for this prototype; not validated.`)
+  ];
+
+  const aRows = S.A.picks.map(p => `<tr><td class="n">${p.round}</td><td>${p.cards.map(c=>`<span class="tt" style="background:${typeColor(c.type)}">${c.type}</span> ${esc(c.text)}`).join("<br>")}</td><td class="n">${p.most}</td><td class="n">${p.least}</td><td class="n">${p.ms!=null?(p.ms/1000).toFixed(1)+" s":"–"}</td><td class="n">${p.changes??0}</td></tr>`).join("");
+  const bRows = S.B.log.map(l => `<tr><td class="n">${l.id}</td><td class="n">${l.trait}</td><td>${esc(B_SCENES.find(s=>s.id===l.id).options[l.level-1])}</td><td class="n">${l.level}</td><td class="n">${l.ms!=null?(l.ms/1000).toFixed(1)+" s":"–"}</td><td class="n">${l.changes}</td></tr>`).join("");
+  const cRows = P.persistence.game.rows.map(r => `<tr><td class="n">${r.n}</td><td class="n">${C_LOCKS.find(l=>l.n===r.n).letters}</td><td>${r.solvable?"solvable":"unsolvable"}</td><td>${r.outcome}</td><td class="n">${r.seconds} s</td><td class="n">${r.guesses}</td><td class="n">${r.shuffles??0}</td><td class="n">${r.active!=null?r1(r.active)+" s":"–"}</td><td>${r.flag?"waiting":""}</td><td class="mono small">${esc((r.guessList||[]).join(" "))}</td></tr>`).join("");
+  const srRows = [...MINI_IPIP.map(i=>[i.id,"Mini-IPIP "+i.trait+(i.key===1?"+":"−"),i.text,ACC_SCALE]),...INTEREST_ITEMS.map(i=>[i.id,"Interest "+i.type,i.text,LIKE_SCALE]),...PERSIST_ITEMS.map(i=>[i.id,"Persistence"+(i.key===1?"+":"−"),i.text,ACC_SCALE])]
+    .map(([id,kind,text,sc]) => `<tr><td class="n">${id}</td><td>${kind}</td><td>${esc(text)}</td><td>${esc(sc[S.SR.answers[id]-1])}</td><td class="n">${S.SR.answers[id]}</td><td class="n">${S.SR.times[id]!=null?(S.SR.times[id]/1000).toFixed(1)+" s":"–"}</td></tr>`).join("");
+  const aiRows = S.ai.log.length ? S.ai.log.map(l=>`<tr><td class="n">${esc(l.at.slice(11,19))}</td><td>${esc(l.kind)}</td><td>${esc(l.model)}</td><td style="white-space:pre-wrap">${esc(l.reply)}</td></tr>`).join("") : "";
+  const dur = S.startedAt && S.finishedAt ? Math.round((new Date(S.finishedAt)-new Date(S.startedAt))/60000) + " min" : "–";
+
+  return `
+  <div class="ev">
+    <div class="panel small stack-sm">
+      <div class="row" style="justify-content:space-between"><b>Session</b><span class="mono">v${VERSION}</span></div>
+      <div class="tablewrap"><table><tbody>
+        <tr><th>Started</th><td class="n">${esc(S.startedAt||"–")}</td></tr>
+        <tr><th>Finished</th><td class="n">${esc(S.finishedAt||"–")} (${dur})</td></tr>
+        <tr><th>Consent</th><td>18+ confirmed: ${S.setup.adult?"yes":"no"} · agreed to take part: ${S.setup.consent?"yes":"no"}</td></tr>
+        <tr><th>Stage / field</th><td>${esc(S.setup.stage)} · ${esc(S.setup.field||"not given")} (not scored)</td></tr>
+        <tr><th>AI mode</th><td>${S.ai.enabled?"on":"off"} · ${S.ai.log.length} AI messages (never used in scoring)</td></tr>
+        <tr><th>Data</th><td>${S.example?"<b>Example data, not a real person</b>":"Real session"}</td></tr>
+      </tbody></table></div>
+    </div>
+    <h3>Each result, traced</h3>
+    ${blocks.join("")}
+    <h3>Raw data</h3>
+    <details><summary>Game A · 12 rounds</summary><div class="tablewrap"><table><thead><tr><th>#</th><th>Cards (type hidden during play)</th><th>Most</th><th>Least</th><th>Time</th><th>Changes</th></tr></thead><tbody>${aRows}</tbody></table></div></details>
+    <details><summary>Game B · 10 scenes</summary><div class="tablewrap"><table><thead><tr><th>Scene</th><th>Trait</th><th>Chosen option</th><th>Level</th><th>Time</th><th>Changes</th></tr></thead><tbody>${bRows}</tbody></table></div></details>
+    <details><summary>Game C · 8 locks</summary><div class="tablewrap"><table><thead><tr><th>Lock</th><th>Letters</th><th>Type</th><th>Outcome</th><th>Time</th><th>Guesses</th><th>Shuffles</th><th>Active</th><th>Flag</th><th>Guesses made</th></tr></thead><tbody>${cRows}</tbody></table></div></details>
+    <details><summary>Mirror round · 34 answers</summary><div class="tablewrap"><table><thead><tr><th>Id</th><th>Scale</th><th>Item</th><th>Answer</th><th>Value</th><th>Time</th></tr></thead><tbody>${srRows}</tbody></table></div></details>
+    ${aiRows ? `<details><summary>AI messages (not scored)</summary><p class="small">System prompt:</p><div class="calc">${esc(AI_SYSTEM)}</div><div class="tablewrap"><table><thead><tr><th>Time</th><th>Kind</th><th>Model</th><th>Reply</th></tr></thead><tbody>${aiRows}</tbody></table></div></details>` : ""}
+    <details open><summary>Export</summary>
+      <div class="stack-sm">
+        <p class="small">The full session as JSON, including every rule result, or the evidence report as a standalone page.</p>
+        <div class="row"><button class="btn small" data-act="copyJson">Copy JSON</button><button class="btn small ghost" data-act="dlJson">Download JSON</button><button class="btn small ghost" data-act="dlHtml">Download evidence report</button><span class="small" id="copyMsg" role="status"></span></div>
+        <div class="jsonbox" id="jsonBox">${esc(JSON.stringify(exportData(), null, 2))}</div>
+      </div></details>
+  </div>`;
+}
+function exportData(){
+  return { app:"Inferred Ikigai prototype", version:VERSION, example:S.example, startedAt:S.startedAt, finishedAt:S.finishedAt,
+    setup:{...S.setup}, gameA:S.A.picks, gameB:S.B.log, gameC:S.C.results, selfReport:S.SR.answers,
+    profile:S.profile, reactions:S.reactions, notes:S.notes, ai:{enabled:S.ai.enabled, model:S.ai.model, systemPrompt:AI_SYSTEM, log:S.ai.log} };
+}
+
+/* ---------- AI mode ---------- */
+const AI_SYSTEM = `You are a reflection coach for a university student exploring careers. You receive their profile from a prototype that scored it with fixed rules. Rules: Never change, dispute or add scores or labels. Never tell them which career to choose. Ask at most three short, open questions that help them test the results against their real experience. When asked for an experiment, suggest one small, concrete, low-cost action they can do within two weeks. Treat "conflicting" results as open questions. Use plain English, under 150 words.`;
+function profileSummary(){
+  const P = S.profile;
+  return JSON.stringify({ interestCode:P.interest.combinedCode, interestAgreement:P.interest.label,
+    traits:Object.fromEntries(TRAITS.map(t=>[TRAIT_INFO[t].plain,{score:P.traits[t].avg,agreement:P.traits[t].label,statement:traitStatement(t,P.traits[t])}])),
+    persistence:{score:P.persistence.avg,agreement:P.persistence.label}, studentReactions:S.reactions, studentNotes:S.notes, stage:S.setup.stage });
+}
+function coachPanel(){
+  if (!S.ai.enabled) return `<div class="note small">Turn on <b>AI mode</b> (top right) to add a reflection coach. It asks questions about these results and never changes a score.</div>`;
+  const msgs = S.ai.log.filter(l=>l.kind!=="error").map(l => `${l.user?`<div class="msg me"><span class="who">You</span>${esc(l.user)}</div>`:""}<div class="msg ai"><span class="who">AI-generated · ${esc(l.model)}</span>${esc(l.reply)}</div>`).join("");
+  return `<div class="coach"><div class="row" style="justify-content:space-between"><h3>Reflection coach</h3><span class="pill example">AI-generated, not scored</span></div>
+    ${msgs || `<p class="small muted">The coach sees your scores, labels and reactions, not your nickname.</p>`}
+    ${S.ai.error ? `<p class="small" style="color:var(--conflict)">${esc(S.ai.error)}</p>`:""}
+    <div class="row"><button class="btn small" data-act="aiAsk" data-kind="questions" ${S.ai.busy?"disabled":""}>Ask me questions</button><button class="btn small ghost" data-act="aiAsk" data-kind="experiment" ${S.ai.busy?"disabled":""}>Suggest one small experiment</button></div>
+    <form id="aiForm" class="guessrow" style="max-width:none"><input type="text" id="aiInput" placeholder="Reply or ask something about your results" aria-label="Message to the coach"><button class="btn small" type="submit" ${S.ai.busy?"disabled":""}>Send</button></form>
+    ${S.ai.busy?`<p class="small muted">Thinking…</p>`:""}</div>`;
+}
+async function aiCall(kind, userText){
+  const prompts = { questions:"Ask me up to three reflection questions about my profile.", experiment:"Suggest one small experiment I can try in the next two weeks to test my top interest.", chat:userText };
+  const history = S.ai.log.filter(l=>l.kind!=="error").flatMap(l => [{role:"user",content:l.prompt},{role:"assistant",content:l.reply}]).slice(-8);
+  const messages = [{role:"system",content:AI_SYSTEM},{role:"user",content:"My profile: "+profileSummary()},...history,{role:"user",content:prompts[kind]}];
+  S.ai.busy = true; S.ai.error = ""; render();
+  try{
+    let res;
+    if (S.ai.server) res = await fetch("api/ai", { method:"POST", headers:{"Content-Type":"application/json", ...(S.ai.key?{"x-user-key":S.ai.key}:{})}, body: JSON.stringify({ model:S.ai.model, messages }) });
+    else {
+      if (!S.ai.key) throw new Error("Add an API key in AI mode settings first.");
+      res = await fetch(S.ai.baseUrl.replace(/\/$/,"") + "/chat/completions", { method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.ai.key}, body: JSON.stringify({ model:S.ai.model, messages, temperature:0.7, max_tokens:400 }) });
+    }
+    if (!res.ok){ const t = await res.text(); throw new Error(`The AI provider returned ${res.status}. ${t.slice(0,160)}`); }
+    const j = await res.json();
+    const reply = j.choices?.[0]?.message?.content?.trim() || "(empty reply)";
+    S.ai.log.push({ at:iso(), kind, model:S.ai.model, prompt:prompts[kind], user: kind==="chat"?userText:"", reply });
+  } catch(e){
+    S.ai.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message)
+      ? "Couldn't reach the AI provider from this page. This preview blocks outside connections; the Vercel version sends AI calls through its own server."
+      : e.message;
+  } finally { S.ai.busy = false; render(); }
+}
+function openAiSettings(){
+  $("#modalRoot").innerHTML = `<div class="modal" data-act="closeModalBg"><div class="panel stack" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
+    <div class="row" style="justify-content:space-between"><h3 id="aiTitle">AI mode</h3><button class="iconbtn" data-act="closeModal">Close</button></div>
+    <label class="toggle"><span>Use AI for reflection prompts</span><span class="switch"><input type="checkbox" id="aiOn" ${S.ai.enabled?"checked":""}><span></span></span></label>
+    <p class="small muted">AI never changes scores, labels or statements. It only adds a reflection coach on the results page, and every message is marked AI-generated.</p>
+    <p class="small"><b>Connection:</b> ${S.ai.server ? `this site's server (/api/ai)${S.ai.serverKey?" with a server-side key. A key below is optional.":". Add your key below."}` : "direct from your browser to the provider."}</p>
+    <label class="field">API key <input type="password" id="aiKey" value="${esc(S.ai.key)}" placeholder="sk-…" autocomplete="off"><span class="small muted" style="font-weight:400">Kept in page memory only. Lost on reload, never exported.</span></label>
+    <label class="field">Model <input type="text" id="aiModel" value="${esc(S.ai.model)}"></label>
+    ${S.ai.server ? "" : `<label class="field">Base URL (OpenAI-compatible) <input type="text" id="aiBase" value="${esc(S.ai.baseUrl)}"></label>`}
+    <div class="row"><button class="btn" data-act="saveAi">Save</button></div>
+  </div></div>`;
+  $("#aiOn").focus();
+}
+
+/* ---------- example session ---------- */
+function makeExample(){
+  const s = freshState(); s.example = true; s.screen = "results";
+  s.setup = { adult:true, consent:true, stage:"Final year of a bachelor's degree", field:"Computer Science", nickname:"Example student" };
+  s.startedAt = "2026-10-13T10:00:00.000Z"; s.finishedAt = "2026-10-13T10:27:00.000Z";
+  const pref = ["I","A","S","C","E","R"]; // made-up preference order
+  s.A.picks = A_ROUNDS.map(rd => { const ts = rd.cards.map(c=>c.type).sort((a,b)=>pref.indexOf(a)-pref.indexOf(b));
+    return { round:rd.round, cards:rd.cards, most:ts[0], least:ts[2], ms:4200+rd.round*130, changes: rd.round===5?1:0 }; });
+  const lv = {E1:2,E2:2,A1:3,A2:4,C1:4,C2:3,N1:2,N2:3,O1:4,O2:3};
+  s.B.levels = lv; s.B.log = B_SCENES.map((sc,i)=>({ id:sc.id, trait:sc.trait, level:lv[sc.id], ms:6000+i*300, changes:i===3?1:0 }));
+  s.C.results = [
+    {n:1,seconds:22.4,guesses:3,guessList:["MAKTER","MARTEK","MARKET"],outcome:"solved"},
+    {n:2,seconds:31.0,guesses:2,guessList:["BIRDGE","BRIDGE"],outcome:"solved"},
+    {n:3,seconds:64.2,guesses:5,guessList:["BISKET","BESKIT","KISBET","TIKBES","BETSKI"],outcome:"skipped"},
+    {n:4,seconds:18.7,guesses:1,guessList:["POCKET"],outcome:"solved"},
+    {n:5,seconds:90.0,guesses:2,guessList:["PREWIN","WINPER"],outcome:"timeout"},
+    {n:6,seconds:40.3,guesses:2,guessList:["JUNGEL","JUNGLE"],outcome:"solved"},
+    {n:7,seconds:12.5,guesses:1,guessList:["MORTIL"],outcome:"skipped"},
+    {n:8,seconds:90.0,guesses:4,guessList:["WOWDIN","DOWWIN","WINDWO","WIDNOW"],outcome:"timeout"}];
+  const a = {}; // Mini-IPIP made-up answers
+  Object.assign(a,{M1:2,M6:4,M11:2,M16:4, M2:4,M7:2,M12:4,M17:1, M3:4,M8:2,M13:5,M18:2, M4:2,M9:4,M14:2,M19:4, M5:5,M10:1,M15:2,M20:1});
+  Object.assign(a,{I1:2,I7:2,I2:5,I8:4,I3:4,I9:3,I4:4,I10:3,I5:2,I11:1,I6:3,I12:3, P1:4,P2:2});
+  s.SR.answers = a;
+  s.profile = buildProfile({ A:{picks:s.A.picks}, B:{levels:s.B.levels}, C:{results:s.C.results}, SR:{answers:a} });
+  s.ai = { ...S.ai, log:[], busy:false, error:"" };
+  return s;
+}
+
+/* ---------- events ---------- */
+let dlNs; // claude.ai downloads capability, or null outside the viewer
+async function download(name, text, type){
+  const m = $("#copyMsg");
+  if (dlNs === undefined) dlNs = window.claude?.use ? await window.claude.use("downloads").catch(()=>null) : null;
+  if (dlNs){
+    try { await dlNs.save({ filename:name, data:text }); if (m) m.textContent = "Saved."; }
+    catch(e){ if (m) m.textContent = e?.code === "declined" ? "Download cancelled." : "Couldn't save the file here. Use Copy JSON instead."; }
+    return;
+  }
+  try { const b = new Blob([text],{type}); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); if (m) m.textContent = "Downloaded."; }
+  catch(e){ if (m) m.textContent = "Couldn't start the download. Use Copy JSON instead."; }
+}
+function evidenceHtmlFile(){
+  const css = document.querySelector("style").outerHTML;
+  const saved = S.tab; S.tab = "evidence"; const body = evidenceReport(S.profile); S.tab = saved;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Evidence report · Inferred Ikigai ${VERSION}</title>${css}</head><body><div class="wrap"><main><section class="screen"><h1>Evidence report</h1>${body.replace(/<details(?! open)/g,"<details open")}</section></main></div></body></html>`;
+}
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act;
+  if (act === "srPick" || act === "note") return;
+  switch(act){
+    case "home": go("welcome"); break;
+    case "start": { const ai = currentAi(); S = freshState(); S.ai = {...S.ai, ...ai}; go("setup"); break; }
+    case "example": { const ai = currentAi(); S = makeExample(); S.ai = {...S.ai, ...ai}; render(); window.scrollTo({top:0}); break; }
+    case "restart": { const ai = currentAi(); S = freshState(); S.ai = {...S.ai, ...ai}; go("welcome"); break; }
+    case "setupNext":
+      S.setup = { adult:$("#adult").checked, consent:$("#consent").checked, stage:$("#stage").value, field:$("#field").value.trim(), nickname:$("#nickname").value.trim() };
+      S.startedAt = iso(); go("A"); break;
+    case "aPick": {
+      const kind = el.dataset.kind, t = el.dataset.t, sel = S.A.sel, other = kind==="most"?"least":"most";
+      if (sel[kind] && sel[kind] !== t) sel.changes++;
+      sel[kind] = sel[kind]===t ? null : t; if (sel[other]===t) sel[other]=null; render(); break; }
+    case "aNext": {
+      const rd = A_ROUNDS[S.A.i];
+      S.A.picks.push({ round:rd.round, cards:rd.cards, most:S.A.sel.most, least:S.A.sel.least, ms: Math.round(now()-S.A.t0), changes:S.A.sel.changes, at:iso() });
+      S.A.sel = {most:null,least:null,changes:0}; S.A.t0 = 0;
+      if (S.A.i < A_ROUNDS.length-1){ S.A.i++; render(); } else go("B");
+      break; }
+    case "bPick": { const o = +el.dataset.o; if (S.B.sel!==null && S.B.sel!==o) S.B.changes++; S.B.sel = o; render(); break; }
+    case "bNext": {
+      const sc = B_SCENES[S.B.i], level = S.B.sel+1;
+      S.B.levels[sc.id] = level; S.B.log.push({ id:sc.id, trait:sc.trait, level, ms:Math.round(now()-S.B.t0), changes:S.B.changes, at:iso() });
+      S.B.sel = null; S.B.changes = 0; S.B.t0 = 0;
+      if (S.B.i < B_SCENES.length-1){ S.B.i++; render(); } else { S.C.phase = "intro"; go("C"); }
+      break; }
+    case "cBegin": S.C.phase = "play"; render(); break;
+    case "cSkip": finishLock("skipped"); break;
+    case "cTile": lockPick(+el.dataset.ix); break;
+    case "cDel": if (S.C.cur && !S.C.cur.busy){ S.C.cur.picked.pop(); lockUI(); } break;
+    case "cClear": if (S.C.cur && !S.C.cur.busy){ S.C.cur.picked = []; lockUI(); } break;
+    case "cShuffle": if (S.C.cur && !S.C.cur.busy){ const o = S.C.cur.order; S.C.cur.order = [3,0,5,1,4,2].map(k => o[k]); S.C.cur.shuffles++; lockUI(); } break;
+    case "zone": deckAnswer(+el.dataset.v); break;
+    case "deckUndo": if (S.SR.deckI > 0){ S.SR.deckI--; S.SR.t0 = 0; render(); } break;
+    case "face": {
+      const id = el.dataset.id, v = +el.dataset.v;
+      if (id === "practice") S.SR.practice2 = v; else S.SR.answers[id] = v;
+      const job = document.getElementById("job-"+id); job.classList.add("rated");
+      job.querySelectorAll(".facebtn").forEach(b => { const on = b===el; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+      job.querySelector(".facelab").textContent = LIKE_SCALE[v-1];
+      const n = INTEREST_ITEMS.filter(i => S.SR.answers[i.id]).length;
+      $("#boardCount").textContent = `${n} of ${INTEREST_ITEMS.length} rated`; $("#boardNext").disabled = n < INTEREST_ITEMS.length;
+      break; }
+    case "toSR": go("SR"); break;
+    case "srNext":
+      if (S.SR.block < 1){ S.SR.block++; go("SR"); }
+      else {
+        S.finishedAt = iso();
+        S.profile = buildProfile({ A:{picks:S.A.picks}, B:{levels:S.B.levels}, C:{results:S.C.results}, SR:{answers:S.SR.answers} });
+        S.tab = "student"; go("results");
+      }
+      break;
+    case "tab": S.tab = el.dataset.v; S.openEv = null; render(); window.scrollTo({top:0}); break;
+    case "react": S.reactions[el.dataset.id] = el.dataset.v;
+      el.parentElement.querySelectorAll("button").forEach(b => { const on = b===el; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); }); break;
+    case "toEvidence": e.preventDefault(); S.tab = "evidence"; S.openEv = el.dataset.id; render();
+      setTimeout(()=>document.getElementById("ev-"+el.dataset.id)?.scrollIntoView({block:"start"}), 30); break;
+    case "copyJson": {
+      const txt = JSON.stringify(exportData(), null, 2), m = $("#copyMsg");
+      (navigator.clipboard?.writeText(txt) || Promise.reject()).then(()=>{ m.textContent = "Copied."; })
+        .catch(()=>{ const r = document.createRange(); r.selectNodeContents($("#jsonBox")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); m.textContent = "Selected. Press Ctrl+C or Cmd+C to copy."; });
+      break; }
+    case "dlJson": download(`inferred-ikigai-${(S.finishedAt||iso()).slice(0,10)}.json`, JSON.stringify(exportData(), null, 2), "application/json"); break;
+    case "dlHtml": download(`evidence-report-${(S.finishedAt||iso()).slice(0,10)}.html`, evidenceHtmlFile(), "text/html"); break;
+    case "aiAsk": aiCall(el.dataset.kind); break;
+    case "closeModal": $("#modalRoot").innerHTML = ""; $("#aiBtn").focus(); break;
+    case "closeModalBg": if (e.target === el){ $("#modalRoot").innerHTML = ""; } break;
+    case "saveAi":
+      S.ai.enabled = $("#aiOn").checked; S.ai.key = $("#aiKey").value.trim(); S.ai.model = $("#aiModel").value.trim() || "gpt-4o-mini";
+      if ($("#aiBase")) S.ai.baseUrl = $("#aiBase").value.trim() || "https://api.openai.com/v1";
+      S.ai.error = ""; $("#modalRoot").innerHTML = ""; render(); break;
+  }
+});
+function currentAi(){ return { enabled:S.ai.enabled, key:S.ai.key, model:S.ai.model, baseUrl:S.ai.baseUrl, server:S.ai.server, serverKey:S.ai.serverKey }; }
+document.addEventListener("input", e => { const el = e.target; if (el.dataset?.act === "note") S.notes[el.dataset.id] = el.value; });
+document.addEventListener("submit", e => {
+  if (e.target.id === "aiForm"){ e.preventDefault(); const v = $("#aiInput").value.trim(); if (v) aiCall("chat", v); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#modalRoot").innerHTML){ $("#modalRoot").innerHTML = ""; } });
+$("#aiBtn").addEventListener("click", openAiSettings);
+
+// Detect the Vercel server route for AI calls (absent in the preview).
+(async () => {
+  try { const r = await fetch("api/health", {cache:"no-store"}); if (r.ok){ const j = await r.json(); if (j && j.ok){ S.ai.server = true; S.ai.serverKey = !!j.serverKey; } } } catch(e){}
+})();
+
+render();
+</script>
+
+</body>
+</html>
